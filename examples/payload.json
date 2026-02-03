@@ -1,0 +1,14 @@
+{
+  "id": "evt_123",
+  "type": "payment_intent.succeeded",
+  "created": 1700000000,
+  "data": {
+    "object": {
+      "amount": 1200,
+      "currency": "jpy",
+      "metadata": {
+        "order_id": "A001"
+      }
+    }
+  }
+}
