@@ -5,11 +5,12 @@ import path from "node:path";
 import process from "node:process";
 import Ajv, { type ErrorObject } from "ajv";
 import toJsonSchema from "to-json-schema";
+import schemaDiff from "json-schema-diff";
 
-type Cmd = "infer" | "check";
+type Cmd = "infer" | "check" | "diff";
 
 function usage(): never {
-  console.error(`wcci - webhook contract CI (WIP)\n\nCommands:\n  infer --in <payload.json> --out <schema.json>\n  check --schema <schema.json> --in <payload.json>\n`);
+  console.error(`wcci - webhook contract CI (WIP)\n\nCommands:\n  infer --in <payload.json> --out <schema.json>\n  check --schema <schema.json> --in <payload.json>\n  diff --base <schema.json> --next <schema.json>\n`);
   process.exit(2);
 }
 
@@ -86,7 +87,7 @@ function normalizeToJsonSchema(input: any): any {
 
 async function main() {
   const cmd = process.argv[2] as Cmd | undefined;
-  if (!cmd || (cmd !== "infer" && cmd !== "check")) usage();
+  if (!cmd || (cmd !== "infer" && cmd !== "check" && cmd !== "diff")) usage();
 
   if (cmd === "infer") {
     const inFile = argValue("--in");
@@ -123,6 +124,39 @@ async function main() {
 
     console.error("payload does not match schema:\n" + formatAjvErrors(validate.errors));
     process.exit(1);
+  }
+
+  if (cmd === "diff") {
+    const baseFile = argValue("--base");
+    const nextFile = argValue("--next");
+    if (!baseFile || !nextFile) usage();
+
+    const base = normalizeToJsonSchema(readJson(baseFile));
+    const next = normalizeToJsonSchema(readJson(nextFile));
+
+    // json-schema-diff returns `{ added, removed }` and will treat removals as breaking.
+    const res: any = await schemaDiff.diffSchemas({
+      sourceSchema: base,
+      destinationSchema: next,
+    });
+
+    const removalsFound = Boolean(res?.removalsFound);
+    const additionsFound = Boolean(res?.additionsFound);
+
+    if (removalsFound) {
+      console.error("breaking schema changes detected (removalsFound=true)");
+      if (res?.removedJsonSchema) {
+        console.error(JSON.stringify(res.removedJsonSchema, null, 2));
+      }
+      process.exit(1);
+    }
+
+    console.log("no breaking removals detected");
+    if (additionsFound && res?.addedJsonSchema) {
+      console.log("additions detected:");
+      console.log(JSON.stringify(res.addedJsonSchema, null, 2));
+    }
+    return;
   }
 }
 
