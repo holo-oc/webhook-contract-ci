@@ -1,0 +1,14 @@
+breaking webhook payload changes detected:
+removed required paths:
+- /commit_author_name
+- /commit_msg
+- /commit_ref
+- /created_at
+- /id
+- /private
+- /publish_id
+- /review_id
+- /site_id
+- /updated_at
+added paths:
+- /new_field

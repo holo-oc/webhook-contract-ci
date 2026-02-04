@@ -1,0 +1,20 @@
+{
+  "id": "60386e4f18c983007b9f0b42",
+  "state": "ready",
+  "name": "example-site",
+  "url": "https://example-site.netlify.app",
+  "ssl_url": "https://example-site.netlify.app",
+  "admin_url": "https://app.netlify.com/sites/example-site/deploys/60386e4f18c983007b9f0b42",
+  "diff_url": "https://app.netlify.com/sites/example-site/deploys/60386e4f18c983007b9f0b41...60386e4f18c983007b9f0b42",
+  "build_id": 123456,
+  "branch": "main",
+  "commit_ref": "abc123def456",
+  "commit_msg": "Update index.html",
+  "commit_author_name": "johndoe",
+  "review_id": null,
+  "created_at": "2023-10-01T12:00:00Z",
+  "updated_at": "2023-10-01T12:05:00Z",
+  "private": false,
+  "publish_id": "60386e4f18c983007b9f0b43",
+  "site_id": "60386e4f18c983007b9f0b40"
+}

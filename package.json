@@ -53,7 +53,9 @@
     "demo:mailchimp": "npm run build && node dist/cli.js diff --base examples/schema-mailchimp.json --next examples/payload-mailchimp.json",
     "demo:mailchimp:breaking": "npm run build && node dist/cli.js diff --base examples/schema-mailchimp.json --next examples/payload-mailchimp-breaking.json --show-nonbreaking",
     "demo:gitlab": "npm run build && node dist/cli.js diff --base examples/schema-gitlab.json --next examples/payload-gitlab.json",
-    "demo:gitlab:breaking": "npm run build && node dist/cli.js diff --base examples/schema-gitlab.json --next examples/payload-gitlab-breaking.json --show-nonbreaking"
+    "demo:gitlab:breaking": "npm run build && node dist/cli.js diff --base examples/schema-gitlab.json --next examples/payload-gitlab-breaking.json --show-nonbreaking",
+    "demo:netlify": "npm run build && node dist/cli.js diff --base examples/schema-netlify.json --next examples/payload-netlify.json",
+    "demo:netlify:breaking": "npm run build && node dist/cli.js diff --base examples/schema-netlify.json --next examples/payload-netlify-breaking.json --show-nonbreaking"
   },
   "keywords": [
     "webhook",

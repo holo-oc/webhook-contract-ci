@@ -1,0 +1,75 @@
+{
+  "ok": false,
+  "breakingCount": 10,
+  "breaking": {
+    "removedRequired": [
+      "/commit_author_name",
+      "/commit_msg",
+      "/commit_ref",
+      "/created_at",
+      "/id",
+      "/private",
+      "/publish_id",
+      "/review_id",
+      "/site_id",
+      "/updated_at"
+    ],
+    "requiredBecameOptional": [],
+    "typeChanged": [],
+    "constraintsChanged": []
+  },
+  "nonBreaking": {
+    "added": [
+      "/new_field"
+    ],
+    "removedOptional": []
+  },
+  "breakingPaths": [
+    {
+      "kind": "removedRequired",
+      "pointer": "/commit_author_name"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/commit_msg"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/commit_ref"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/created_at"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/id"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/private"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/publish_id"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/review_id"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/site_id"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/updated_at"
+    }
+  ],
+  "nonBreakingPaths": [
+    {
+      "kind": "added",
+      "pointer": "/new_field"
+    }
+  ]
+}

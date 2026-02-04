@@ -1,0 +1,85 @@
+{
+  "type": "object",
+  "properties": {
+    "admin_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "branch": {
+      "type": "string"
+    },
+    "build_id": {
+      "type": "integer"
+    },
+    "commit_author_name": {
+      "type": "string"
+    },
+    "commit_msg": {
+      "type": "string"
+    },
+    "commit_ref": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "diff_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "private": {
+      "type": "boolean"
+    },
+    "publish_id": {
+      "type": "string"
+    },
+    "review_id": {
+      "type": "null"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "ssl_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "state": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri"
+    }
+  },
+  "required": [
+    "admin_url",
+    "branch",
+    "build_id",
+    "commit_author_name",
+    "commit_msg",
+    "commit_ref",
+    "created_at",
+    "diff_url",
+    "id",
+    "name",
+    "private",
+    "publish_id",
+    "review_id",
+    "site_id",
+    "ssl_url",
+    "state",
+    "updated_at",
+    "url"
+  ]
+}

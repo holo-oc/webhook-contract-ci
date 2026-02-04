@@ -1,0 +1,11 @@
+{
+  "state": "failed",
+  "name": "example-site",
+  "new_field": "unexpected",
+  "url": "https://example-site.netlify.app",
+  "ssl_url": "https://example-site.netlify.app",
+  "admin_url": "https://app.netlify.com/sites/example-site/deploys/60386e4f18c983007b9f0b42",
+  "diff_url": "https://app.netlify.com/sites/example-site/deploys/60386e4f18c983007b9f0b41...60386e4f18c983007b9f0b42",
+  "build_id": 123456,
+  "branch": "main"
+}
