@@ -119,7 +119,11 @@ npm ci
 npm run demo:ok
 npm run demo:breaking
 npm run demo:breaking:json
+npm run demo:stripe
+npm run demo:slack
+npm run demo:github
 ```
+
 
 Example output (breaking):
 
@@ -129,10 +133,7 @@ removed required paths:
 - /id
 ```
 
-(For deterministic, copy/paste-able snapshots, see:
-- `examples/demo-ok-output.txt`
-- `examples/demo-breaking-output.txt`
-- `examples/demo-breaking-output.json`.)
+(For deterministic, copy/paste-able snapshots per provider, see `examples/demo-*-ok.txt`, `demo-*-breaking*.txt/json`.)
 
 Optional: there’s also a `vhs` tape you can use to generate a short GIF demo locally:
 - `examples/vhs/wcci.tape`

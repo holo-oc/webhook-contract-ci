@@ -1,0 +1,29 @@
+{
+  \"ok\": false,
+  \"breakingCount\": 2,
+  \"breaking\": {
+    \"removedRequired\": [
+      \"/channel\"
+    ],
+    \"requiredBecameOptional\": [],
+    \"typeChanged\": [
+      \"/ts (\\\"string\\\" -> \\\"number\\\")”
+    ],
+    \"constraintsChanged\": []
+  },
+  \"nonBreaking\": {
+    \"added\": [],
+    \"removedOptional\": []
+  },
+  \"breakingPaths\": [
+    {
+      \"kind\": \"removedRequired\",
+      \"pointer\": \"/channel\"
+    },
+    {
+      \"kind\": \"typeChanged\",
+      \"pointer\": \"/ts\",
+      \"detail\": \"\\\"string\\\" -> \\\"number\\\"\"
+    }
+  ]
+}

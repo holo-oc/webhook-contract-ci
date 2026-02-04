@@ -1,0 +1,5 @@
+breaking webhook payload changes detected:
+removed required paths:
+- /channel
+type changed:
+- /ts (\"string\" -> \"number\")
