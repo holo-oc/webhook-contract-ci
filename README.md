@@ -33,7 +33,7 @@ You typically commit two things:
 
 It also supports common OpenAPI/JSON Schema composition patterns: object properties/constraints that live inside `allOf` branches are collapsed for indexing, so they participate in diffs.
 
-Note on pointers: output is JSON-pointer-ish (e.g. `/nested/id`). For some synthetic schema nodes we use internal tokens to avoid collisions with real property names:
+Note on pointers: output is JSON-pointer-ish (e.g. `/nested/id`) and is displayed with RFC6901 *decoded* property names (so a property literally named `a/b` shows up as `/a/b`, not `/a~1b`). For some synthetic schema nodes we use internal tokens to avoid collisions with real property names:
 - homogeneous array item schemas: `/*`
 - tuple array items (when a schema uses `items: [...]`): `/[0]`, `/[1]`, ...
 - `additionalProperties` subschemas: `/{additionalProperties}`

@@ -818,6 +818,32 @@ test("diff: added fields are non-breaking; optional removals are only reported w
   assert.deepEqual(nonBreaking.removedOptional, []);
 });
 
+test("diff: output pointers are unescaped for display (property names with '/' and '~')", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      "a/b": { type: "string" },
+      "til~de": { type: "string" },
+    },
+    required: ["a/b", "til~de"],
+  });
+
+  // Remove one required key to force it into output.
+  const next = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      "til~de": { type: "string" },
+    },
+    required: ["til~de"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.deepEqual(r.breaking.removedRequired, ["/a/b"]);
+});
+
 test("diff: removed optional key is reported when next parent object is closed", () => {
   const base = normalizeToJsonSchema({
     type: "object",
@@ -954,7 +980,7 @@ test("diff: tuple array item type widening is breaking and uses /[index] pointer
   assert.match(r.breaking.typeChanged[0], /^\/arr\/\[1\]/);
 });
 
-test("diff: pointer escaping follows RFC6901-ish rules (~ and /)", () => {
+test("diff: output pointers are shown with unescaped property names (RFC6901 decoding)", () => {
   const base = normalizeToJsonSchema({
     type: "object",
     properties: {
@@ -974,7 +1000,7 @@ test("diff: pointer escaping follows RFC6901-ish rules (~ and /)", () => {
 
   const r = summarizeDiff(base, next);
   assert.equal(r.breakingCount > 0, true);
-  assert.deepEqual(r.breaking.removedRequired.sort(), ["/a~1b", "/til~0de"].sort());
+  assert.deepEqual(r.breaking.removedRequired.sort(), ["/a/b", "/til~de"].sort());
 });
 
 test("diff: opening additionalProperties:false -> true is breaking", () => {

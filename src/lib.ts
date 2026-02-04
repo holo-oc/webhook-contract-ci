@@ -875,7 +875,8 @@ export function summarizeDiff(baseSchema: any, nextSchema: any) {
         continue;
       }
 
-      outTokens.push(t);
+      // Unescape pointer tokens so output reflects the actual JSON property name.
+      outTokens.push(unescapePointerToken(t));
     }
 
     return "/" + outTokens.join("/");
