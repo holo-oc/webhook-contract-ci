@@ -128,6 +128,9 @@ wcci check --schema schemas/webhook.schema.json --in samples/webhook.payload.jso
 
 ```bash
 wcci diff --base schemas/webhook.schema.json --next samples/webhook.payload.json --show-nonbreaking
+
+# Or machine-readable output (still uses exit codes)
+wcci diff --base schemas/webhook.schema.json --next samples/webhook.payload.json --json
 ```
 
 ### Help

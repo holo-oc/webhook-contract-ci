@@ -20,7 +20,7 @@ type ExitCode = 0 | 1 | 2;
 function usage(code: ExitCode = 2): never {
   const out = code === 0 ? console.log : console.error;
   out(
-    `wcci - webhook contract CI\n\nUsage:\n  wcci infer --in <payload.json> --out <schema.json>\n  wcci check --schema <schema.json> --in <payload.json>\n  wcci diff --base <schema.json> --next <payload.json> [--show-nonbreaking]\n\nOptions:\n  -h, --help              Show help\n  --show-nonbreaking      Also print non-breaking adds/removals (diff mode)\n  --debug-schema-diff     Print json-schema-diff output (diff mode)\n\nExit codes:\n  0  success / no breaking changes\n  1  breaking changes (diff) or validation failure (check)\n  2  usage / input error\n`
+    `wcci - webhook contract CI\n\nUsage:\n  wcci infer --in <payload.json> --out <schema.json>\n  wcci check --schema <schema.json> --in <payload.json> [--json]\n  wcci diff --base <schema.json> --next <payload.json> [--show-nonbreaking] [--json]\n\nOptions:\n  -h, --help              Show help\n  --show-nonbreaking      Also print non-breaking adds/removals (diff mode)\n  --json                  Print machine-readable JSON output\n  --debug-schema-diff     Print json-schema-diff output (diff mode)\n\nExit codes:\n  0  success / no breaking changes\n  1  breaking changes (diff) or validation failure (check)\n  2  usage / input error\n`
   );
   process.exit(code);
 }
@@ -87,6 +87,18 @@ async function main() {
     const payload = readJson(inFile);
 
     const { ok, errors } = validateAgainstSchema(schema, payload);
+
+    if (argFlag("--json")) {
+      const out = {
+        ok: Boolean(ok),
+        errors: errors ?? [],
+        formattedErrors: ok ? "" : formatAjvErrors(errors),
+      };
+      console.log(JSON.stringify(out, null, 2));
+      if (!ok) process.exit(1);
+      return;
+    }
+
     if (ok) {
       console.log("ok");
       return;
@@ -116,6 +128,18 @@ async function main() {
         destinationSchema: nextSchema,
       });
       console.log(JSON.stringify(res, null, 2));
+    }
+
+    if (argFlag("--json")) {
+      const out = {
+        ok: breakingCount === 0,
+        breakingCount,
+        breaking,
+        nonBreaking: argFlag("--show-nonbreaking") ? nonBreaking : undefined,
+      };
+      console.log(JSON.stringify(out, null, 2));
+      if (breakingCount > 0) process.exit(1);
+      return;
     }
 
     const printList = (title: string, items: string[]) => {
