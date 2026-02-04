@@ -58,7 +58,10 @@ Modes:
 - `check`: validate a payload sample against a schema
 - `diff`: detect breaking changes vs a schema
 
-### Example workflow
+### Example workflow (PR-safe)
+
+This pattern compares the PR payload sample against the **base branch** schema.
+That way, updating the schema in the PR can’t hide a breaking change.
 
 ```yaml
 name: Webhook contract
@@ -70,13 +73,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Load base schema
+        run: |
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          git show "origin/${{ github.base_ref }}:schemas/webhook.schema.json" > /tmp/webhook.base.schema.json
 
       # Use a tagged release in your own repo, e.g.:
       # - uses: your-org/webhook-contract-ci@v1
       - uses: owner/webhook-contract-ci@v1
         with:
           mode: diff
-          schema: schemas/webhook.schema.json
+          schema: /tmp/webhook.base.schema.json
           payload: samples/webhook.payload.json
           show_nonbreaking: true
 ```

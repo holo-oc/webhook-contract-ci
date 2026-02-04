@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       # In your own repo, use a tagged release, e.g.:
       # - uses: your-org/webhook-contract-ci@v1
@@ -28,17 +30,24 @@ jobs:
         run: |
           git diff --exit-code -- schemas/webhook.schema.json
 
-      - name: Validate sample against schema
+      # Compare against the PR base branch so updating the schema in the PR
+      # doesn't "paper over" breaking changes.
+      - name: Load base schema (from PR base branch)
+        run: |
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          git show "origin/${{ github.base_ref }}:schemas/webhook.schema.json" > /tmp/webhook.base.schema.json
+
+      - name: Validate sample against base schema
         uses: owner/webhook-contract-ci@v1
         with:
           mode: check
-          schema: schemas/webhook.schema.json
+          schema: /tmp/webhook.base.schema.json
           payload: samples/webhook.payload.json
 
-      - name: Detect breaking changes
+      - name: Detect breaking changes (base schema vs PR payload)
         uses: owner/webhook-contract-ci@v1
         with:
           mode: diff
-          schema: schemas/webhook.schema.json
+          schema: /tmp/webhook.base.schema.json
           payload: samples/webhook.payload.json
           show_nonbreaking: true

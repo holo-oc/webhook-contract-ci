@@ -10,7 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Needed so we can read files from the PR base branch via `git show`.
+          fetch-depth: 0
 
+      # 1) Infer schema from the PR payload sample.
       - name: Infer schema (deterministic)
         uses: ./
         with:
@@ -18,22 +22,31 @@ jobs:
           schema: /tmp/stripe.inferred.schema.json
           payload: test/fixtures/stripe.payload.json
 
+      # Optional hygiene: ensure inference is deterministic and matches the committed schema.
       - name: Fail if inferred schema differs from committed fixture
-      # (Uses --no-index so this works even though /tmp is not tracked by git.)
+        # (Uses --no-index so this works even though /tmp is not tracked by git.)
         run: |
           git diff --no-index -- test/fixtures/stripe.schema.json /tmp/stripe.inferred.schema.json
 
-      - name: Validate payload against schema
+      # 2) Load the *base branch* schema to compare against.
+      - name: Load base schema (from PR base branch)
+        run: |
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          git show "origin/${{ github.base_ref }}:test/fixtures/stripe.schema.json" > /tmp/stripe.base.schema.json
+
+      # 3) Check: does the PR payload still validate against the base schema?
+      - name: Validate payload against base schema
         uses: ./
         with:
           mode: check
-          schema: test/fixtures/stripe.schema.json
+          schema: /tmp/stripe.base.schema.json
           payload: test/fixtures/stripe.payload.json
 
-      - name: Detect breaking changes
+      # 4) Diff: classify changes and fail CI on breaking changes.
+      - name: Detect breaking changes (base schema vs PR payload)
         uses: ./
         with:
           mode: diff
-          schema: test/fixtures/stripe.schema.json
+          schema: /tmp/stripe.base.schema.json
           payload: test/fixtures/stripe.payload.json
           show_nonbreaking: true
