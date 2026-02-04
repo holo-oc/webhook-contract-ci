@@ -1,0 +1,57 @@
+{
+  "type": "object",
+  "properties": {
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "admin_graphql_api_id": {
+          "type": "string",
+          "format": "uri"
+        },
+        "body_html": {
+          "type": "string"
+        },
+        "handle": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "product_type": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "vendor": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "admin_graphql_api_id",
+        "body_html",
+        "handle",
+        "id",
+        "product_type",
+        "title",
+        "vendor"
+      ]
+    },
+    "id": {
+      "type": "string"
+    },
+    "shop_id": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "created_at",
+    "data",
+    "id",
+    "shop_id"
+  ]
+}

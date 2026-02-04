@@ -1,0 +1,14 @@
+{
+  "id": "f7a8b9c0-d1e2-3f45-6789-abcdef012345",
+  "shop_id": 123456789,
+  "created_at": "2026-02-05T02:52:00Z",
+  "data": {
+    "id": 690933842,
+    "admin_graphql_api_id": "gid://shopify/Product/690933842",
+    "title": "Burton Custom Freestyle 151",
+    "body_html": "<strong>Hey</strong> <em>you</em>",
+    "vendor": "Burton",
+    "product_type": "Snowboard",
+    "handle": "burton-custom-freestyle-151"
+  }
+}

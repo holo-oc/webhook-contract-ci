@@ -1,0 +1,10 @@
+{
+  "id": "f7a8b9c0-d1e2-3f45-6789-abcdef012345",
+  "created_at": "2026-02-05T02:52:00Z",
+  "data": {
+    "id": 690933842,
+    "admin_graphql_api_id": "gid://shopify/Product/690933842",
+    "title": 123,
+    "vendor": "Burton"
+  }
+}
