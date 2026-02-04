@@ -112,6 +112,38 @@ function isBreakingTypeChange(base, next) {
     }
     return false;
 }
+function stableStringify(value) {
+    // Deterministic stringify for comparing enum/const values.
+    // JSON.stringify depends on object key insertion order; we sort keys recursively.
+    const seen = new WeakSet();
+    const walk = (v) => {
+        if (v === null)
+            return null;
+        const t = typeof v;
+        if (t === "string" || t === "number" || t === "boolean")
+            return v;
+        if (t === "bigint")
+            return String(v);
+        if (t === "undefined")
+            return { __wcci_undefined: true };
+        if (t === "function" || t === "symbol")
+            return { __wcci_unserializable: true };
+        if (Array.isArray(v))
+            return v.map(walk);
+        if (t === "object") {
+            if (seen.has(v))
+                return { __wcci_cycle: true };
+            seen.add(v);
+            const out = {};
+            const keys = Object.keys(v).sort((a, b) => a.localeCompare(b));
+            for (const k of keys)
+                out[k] = walk(v[k]);
+            return out;
+        }
+        return v;
+    };
+    return JSON.stringify(walk(value));
+}
 function isBreakingConstraintChange(base, next) {
     // Return a short reason string if this node's constraints represent a breaking change.
     // Rule: widening (less restrictive) compared to base is breaking.
@@ -119,9 +151,9 @@ function isBreakingConstraintChange(base, next) {
     if (Array.isArray(base.enum)) {
         if (!Array.isArray(next.enum))
             return `enum removed`;
-        const b = new Set(base.enum.map((x) => JSON.stringify(x)));
+        const b = new Set(base.enum.map((x) => stableStringify(x)));
         for (const v of next.enum) {
-            if (!b.has(JSON.stringify(v)))
+            if (!b.has(stableStringify(v)))
                 return `enum widened`;
         }
     }
@@ -129,7 +161,7 @@ function isBreakingConstraintChange(base, next) {
     if (base.const !== undefined) {
         if (next.const === undefined)
             return `const removed`;
-        if (JSON.stringify(base.const) !== JSON.stringify(next.const))
+        if (stableStringify(base.const) !== stableStringify(next.const))
             return `const changed`;
     }
     const cmpNum = (key, kind) => {

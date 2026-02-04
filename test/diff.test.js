@@ -137,6 +137,60 @@ test("diff: enum widening is breaking; enum narrowing is non-breaking", () => {
   assert.equal(r2.breakingCount, 0);
 });
 
+test("diff: enum object values compare deterministically (key order doesn't matter)", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      kind: {
+        type: "object",
+        enum: [{ a: 1, b: 2 }],
+      },
+    },
+    required: ["kind"],
+  });
+
+  const nextSameValueDifferentOrder = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      kind: {
+        type: "object",
+        enum: [{ b: 2, a: 1 }],
+      },
+    },
+    required: ["kind"],
+  });
+
+  const r = summarizeDiff(base, nextSameValueDifferentOrder);
+  assert.equal(r.breakingCount, 0);
+});
+
+test("diff: const object values compare deterministically (key order doesn't matter)", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      kind: {
+        type: "object",
+        const: { a: 1, b: 2 },
+      },
+    },
+    required: ["kind"],
+  });
+
+  const nextSameValueDifferentOrder = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      kind: {
+        type: "object",
+        const: { b: 2, a: 1 },
+      },
+    },
+    required: ["kind"],
+  });
+
+  const r = summarizeDiff(base, nextSameValueDifferentOrder);
+  assert.equal(r.breakingCount, 0);
+});
+
 test("diff: loosening numeric/string bounds is breaking", () => {
   const base = normalizeToJsonSchema({
     type: "object",
