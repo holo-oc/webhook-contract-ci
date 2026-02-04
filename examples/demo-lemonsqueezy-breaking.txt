@@ -1,0 +1,11 @@
+
+> webhook-contract-ci@1.0.0 demo:lemonsqueezy:breaking
+> npm run build && node dist/cli.js diff --base examples/schema-lemonsqueezy.json --next examples/payload-lemonsqueezy-breaking.json --show-nonbreaking
+
+
+> webhook-contract-ci@1.0.0 build
+> tsc -p tsconfig.json
+
+breaking webhook payload changes detected:
+removed required paths:
+- /data/attributes/total

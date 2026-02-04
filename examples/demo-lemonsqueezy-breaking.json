@@ -1,0 +1,23 @@
+{
+  "ok": false,
+  "breakingCount": 1,
+  "breaking": {
+    "removedRequired": [
+      "/data/attributes/total"
+    ],
+    "requiredBecameOptional": [],
+    "typeChanged": [],
+    "constraintsChanged": []
+  },
+  "nonBreaking": {
+    "added": [],
+    "removedOptional": []
+  },
+  "breakingPaths": [
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/attributes/total"
+    }
+  ],
+  "nonBreakingPaths": []
+}

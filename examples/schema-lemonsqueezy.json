@@ -1,0 +1,400 @@
+{
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "object",
+      "properties": {
+        "attributes": {
+          "type": "object",
+          "properties": {
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "currency": {
+              "type": "string"
+            },
+            "currency_rate": {
+              "type": "string"
+            },
+            "customer_id": {
+              "type": "integer"
+            },
+            "discount_total": {
+              "type": "integer"
+            },
+            "discount_total_formatted": {
+              "type": "string"
+            },
+            "discount_total_usd": {
+              "type": "integer"
+            },
+            "first_order_item": {
+              "type": "object",
+              "properties": {
+                "created_at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "order_id": {
+                  "type": "integer"
+                },
+                "price": {
+                  "type": "integer"
+                },
+                "product_id": {
+                  "type": "integer"
+                },
+                "product_name": {
+                  "type": "string"
+                },
+                "test_mode": {
+                  "type": "boolean"
+                },
+                "updated_at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "variant_id": {
+                  "type": "integer"
+                },
+                "variant_name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "created_at",
+                "order_id",
+                "price",
+                "product_id",
+                "product_name",
+                "test_mode",
+                "updated_at",
+                "variant_id",
+                "variant_name"
+              ]
+            },
+            "identifier": {
+              "type": "string"
+            },
+            "order_number": {
+              "type": "integer"
+            },
+            "refunded": {
+              "type": "null"
+            },
+            "refunded_at": {
+              "type": "null"
+            },
+            "status": {
+              "type": "string"
+            },
+            "status_formatted": {
+              "type": "string"
+            },
+            "store_id": {
+              "type": "integer"
+            },
+            "subtotal": {
+              "type": "number"
+            },
+            "subtotal_formatted": {
+              "type": "string"
+            },
+            "subtotal_usd": {
+              "type": "integer"
+            },
+            "tax": {
+              "type": "number"
+            },
+            "tax_formatted": {
+              "type": "string"
+            },
+            "tax_name": {
+              "type": "string"
+            },
+            "tax_rate": {
+              "type": "string",
+              "format": "utc-millisec"
+            },
+            "tax_usd": {
+              "type": "integer"
+            },
+            "test_mode": {
+              "type": "boolean"
+            },
+            "total": {
+              "type": "number"
+            },
+            "total_formatted": {
+              "type": "string"
+            },
+            "total_usd": {
+              "type": "integer"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "urls": {
+              "type": "object",
+              "properties": {
+                "receipt": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              },
+              "required": [
+                "receipt"
+              ]
+            },
+            "user_email": {
+              "type": "string",
+              "format": "email"
+            },
+            "user_name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "created_at",
+            "currency",
+            "currency_rate",
+            "customer_id",
+            "discount_total",
+            "discount_total_formatted",
+            "discount_total_usd",
+            "first_order_item",
+            "identifier",
+            "order_number",
+            "refunded",
+            "refunded_at",
+            "status",
+            "status_formatted",
+            "store_id",
+            "subtotal",
+            "subtotal_formatted",
+            "subtotal_usd",
+            "tax",
+            "tax_formatted",
+            "tax_name",
+            "tax_rate",
+            "tax_usd",
+            "test_mode",
+            "total",
+            "total_formatted",
+            "total_usd",
+            "updated_at",
+            "urls",
+            "user_email",
+            "user_name"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "format": "utc-millisec"
+        },
+        "links": {
+          "type": "object",
+          "properties": {
+            "self": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "required": [
+            "self"
+          ]
+        },
+        "relationships": {
+          "type": "object",
+          "properties": {
+            "customer": {
+              "type": "object",
+              "properties": {
+                "links": {
+                  "type": "object",
+                  "properties": {
+                    "related": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "self": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "required": [
+                    "related",
+                    "self"
+                  ]
+                }
+              },
+              "required": [
+                "links"
+              ]
+            },
+            "discount-redemptions": {
+              "type": "object",
+              "properties": {
+                "links": {
+                  "type": "object",
+                  "properties": {
+                    "related": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "self": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "required": [
+                    "related",
+                    "self"
+                  ]
+                }
+              },
+              "required": [
+                "links"
+              ]
+            },
+            "license-keys": {
+              "type": "object",
+              "properties": {
+                "links": {
+                  "type": "object",
+                  "properties": {
+                    "related": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "self": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "required": [
+                    "related",
+                    "self"
+                  ]
+                }
+              },
+              "required": [
+                "links"
+              ]
+            },
+            "order-items": {
+              "type": "object",
+              "properties": {
+                "links": {
+                  "type": "object",
+                  "properties": {
+                    "related": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "self": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "required": [
+                    "related",
+                    "self"
+                  ]
+                }
+              },
+              "required": [
+                "links"
+              ]
+            },
+            "store": {
+              "type": "object",
+              "properties": {
+                "links": {
+                  "type": "object",
+                  "properties": {
+                    "related": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "self": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "required": [
+                    "related",
+                    "self"
+                  ]
+                }
+              },
+              "required": [
+                "links"
+              ]
+            },
+            "subscriptions": {
+              "type": "object",
+              "properties": {
+                "links": {
+                  "type": "object",
+                  "properties": {
+                    "related": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "self": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "required": [
+                    "related",
+                    "self"
+                  ]
+                }
+              },
+              "required": [
+                "links"
+              ]
+            }
+          },
+          "required": [
+            "customer",
+            "discount-redemptions",
+            "license-keys",
+            "order-items",
+            "store",
+            "subscriptions"
+          ]
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "attributes",
+        "id",
+        "links",
+        "relationships",
+        "type"
+      ]
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "event_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_name"
+      ]
+    }
+  },
+  "required": [
+    "data",
+    "meta"
+  ]
+}
