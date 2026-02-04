@@ -217,6 +217,58 @@ test("diff: loosening numeric/string bounds is breaking", () => {
   assert.deepEqual(r.breaking.constraintsChanged.map((x) => x.split(" ", 1)[0]), ["/amount", "/id"]);
 });
 
+test("diff: loosening array bounds is breaking", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      arr: { type: "array", items: { type: "string" }, maxItems: 3, minItems: 1 },
+    },
+    required: ["arr"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      arr: { type: "array", items: { type: "string" }, maxItems: 10, minItems: 0 },
+    },
+    required: ["arr"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount, 2);
+  assert.equal(r.breaking.constraintsChanged.length, 2);
+  assert.deepEqual(r.breaking.constraintsChanged.map((x) => x.split(" ", 1)[0]), ["/arr", "/arr"]);
+});
+
+test("diff: loosening object property count bounds is breaking", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    minProperties: 1,
+    maxProperties: 2,
+    properties: {
+      a: { type: "string" },
+      b: { type: "string" },
+    },
+    required: ["a"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    minProperties: 0,
+    maxProperties: 3,
+    properties: {
+      a: { type: "string" },
+      b: { type: "string" },
+    },
+    required: ["a"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount, 2);
+  assert.equal(r.breaking.constraintsChanged.length, 2);
+  assert.match(r.breaking.constraintsChanged[0], /^\//);
+});
+
 test("diff: missing inferred type for a required field is treated as breaking (conservative)", () => {
   const base = normalizeToJsonSchema(readJson("base.schema.json"));
   const next = normalizeToJsonSchema(readJson("next.missing-type.schema.json"));

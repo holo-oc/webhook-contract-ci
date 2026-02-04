@@ -32,6 +32,14 @@ export type NodeInfo = {
 
   minLength?: number;
   maxLength?: number;
+
+  // Array constraints
+  minItems?: number;
+  maxItems?: number;
+
+  // Object constraints
+  minProperties?: number;
+  maxProperties?: number;
 };
 
 export function formatAjvErrors(errors: ErrorObject[] | null | undefined): string {
@@ -179,23 +187,31 @@ function stableStringify(value: unknown): string {
   return JSON.stringify(walk(value));
 }
 
-function isBreakingConstraintChange(base: NodeInfo, next: NodeInfo): string | null {
-  // Return a short reason string if this node's constraints represent a breaking change.
+function isBreakingConstraintChanges(base: NodeInfo, next: NodeInfo): string[] {
+  // Return 0+ short reason strings if this node's constraints represent breaking changes.
   // Rule: widening (less restrictive) compared to base is breaking.
+
+  const reasons: string[] = [];
 
   // enum widening/removal
   if (Array.isArray(base.enum)) {
-    if (!Array.isArray(next.enum)) return `enum removed`;
-    const b = new Set(base.enum.map((x) => stableStringify(x)));
-    for (const v of next.enum) {
-      if (!b.has(stableStringify(v))) return `enum widened`;
+    if (!Array.isArray(next.enum)) {
+      reasons.push(`enum removed`);
+    } else {
+      const b = new Set(base.enum.map((x) => stableStringify(x)));
+      for (const v of next.enum) {
+        if (!b.has(stableStringify(v))) {
+          reasons.push(`enum widened`);
+          break;
+        }
+      }
     }
   }
 
   // const removal/change
   if (base.const !== undefined) {
-    if (next.const === undefined) return `const removed`;
-    if (stableStringify(base.const) !== stableStringify(next.const)) return `const changed`;
+    if (next.const === undefined) reasons.push(`const removed`);
+    else if (stableStringify(base.const) !== stableStringify(next.const)) reasons.push(`const changed`);
   }
 
   // additionalProperties
@@ -203,7 +219,7 @@ function isBreakingConstraintChange(base: NodeInfo, next: NodeInfo): string | nu
   // producer-widening change: the producer can start sending new fields that consumers (validating
   // against the base schema) will reject.
   if (base.additionalProperties === false && next.additionalProperties !== false) {
-    return `additionalProperties opened`;
+    reasons.push(`additionalProperties opened`);
   }
 
   // If base had a schema for additionalProperties (meaning "extra" keys are allowed but must
@@ -225,7 +241,7 @@ function isBreakingConstraintChange(base: NodeInfo, next: NodeInfo): string | nu
       // tightening: previously extra keys were allowed (with constraints), now they're forbidden.
       // For producer-change diff, that's not breaking.
     } else {
-      return `additionalProperties schema loosened`;
+      reasons.push(`additionalProperties schema loosened`);
     }
   }
 
@@ -234,37 +250,42 @@ function isBreakingConstraintChange(base: NodeInfo, next: NodeInfo): string | nu
     kind: "min" | "max"
   ) => {
     const b = (base as any)[key];
-    if (typeof b !== "number") return null;
+    if (typeof b !== "number") return;
     const n = (next as any)[key];
-    if (typeof n !== "number") return `${key} removed`;
-    if (kind === "max" && n > b) return `${key} loosened (${b} -> ${n})`;
-    if (kind === "min" && n < b) return `${key} loosened (${b} -> ${n})`;
-    return null;
+    if (typeof n !== "number") {
+      reasons.push(`${key} removed`);
+      return;
+    }
+    if (kind === "max" && n > b) reasons.push(`${key} loosened (${b} -> ${n})`);
+    if (kind === "min" && n < b) reasons.push(`${key} loosened (${b} -> ${n})`);
   };
 
   // Numeric bounds
-  return (
-    cmpNum("maximum", "max") ||
-    cmpNum("exclusiveMaximum", "max") ||
-    cmpNum("minimum", "min") ||
-    cmpNum("exclusiveMinimum", "min") ||
-    (() => {
-      const b = base.maxLength;
-      if (typeof b !== "number") return null;
-      const n = next.maxLength;
-      if (typeof n !== "number") return `maxLength removed`;
-      if (n > b) return `maxLength loosened (${b} -> ${n})`;
-      return null;
-    })() ||
-    (() => {
-      const b = base.minLength;
-      if (typeof b !== "number") return null;
-      const n = next.minLength;
-      if (typeof n !== "number") return `minLength removed`;
-      if (n < b) return `minLength loosened (${b} -> ${n})`;
-      return null;
-    })()
-  );
+  cmpNum("maximum", "max");
+  cmpNum("exclusiveMaximum", "max");
+  cmpNum("minimum", "min");
+  cmpNum("exclusiveMinimum", "min");
+
+  const cmp = (key: keyof NodeInfo, label: string, kind: "min" | "max") => {
+    const b = (base as any)[key];
+    if (typeof b !== "number") return;
+    const n = (next as any)[key];
+    if (typeof n !== "number") {
+      reasons.push(`${label} removed`);
+      return;
+    }
+    if (kind === "max" && n > b) reasons.push(`${label} loosened (${b} -> ${n})`);
+    if (kind === "min" && n < b) reasons.push(`${label} loosened (${b} -> ${n})`);
+  };
+
+  cmp("maxLength", "maxLength", "max");
+  cmp("minLength", "minLength", "min");
+  cmp("maxItems", "maxItems", "max");
+  cmp("minItems", "minItems", "min");
+  cmp("maxProperties", "maxProperties", "max");
+  cmp("minProperties", "minProperties", "min");
+
+  return reasons;
 }
 
 function escapePointerToken(token: string): string {
@@ -299,6 +320,12 @@ export function indexSchema(schema: any): Map<string, NodeInfo> {
 
       minLength: typeof node.minLength === "number" ? node.minLength : undefined,
       maxLength: typeof node.maxLength === "number" ? node.maxLength : undefined,
+
+      minItems: typeof node.minItems === "number" ? node.minItems : undefined,
+      maxItems: typeof node.maxItems === "number" ? node.maxItems : undefined,
+
+      minProperties: typeof node.minProperties === "number" ? node.minProperties : undefined,
+      maxProperties: typeof node.maxProperties === "number" ? node.maxProperties : undefined,
     };
 
     // Store even intermediate nodes so we can detect type changes at objects/arrays too.
@@ -363,8 +390,8 @@ export function summarizeDiff(baseSchema: any, nextSchema: any) {
       typeChanged.push(`${ptr} (${JSON.stringify(b.type)} -> ${JSON.stringify(n.type)})`);
     }
 
-    const c = isBreakingConstraintChange(b, n);
-    if (c) constraintsChanged.push(`${ptr} (${c})`);
+    const cs = isBreakingConstraintChanges(b, n);
+    for (const c of cs) constraintsChanged.push(`${ptr} (${c})`);
   }
 
   for (const [ptr] of nextIdx.entries()) {
