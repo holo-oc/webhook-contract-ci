@@ -215,10 +215,14 @@ function isBreakingConstraintChanges(base: NodeInfo, next: NodeInfo): string[] {
   }
 
   // additionalProperties
-  // If base was a "closed" object (no extra fields allowed), and next opens it up, that is a
-  // producer-widening change: the producer can start sending new fields that consumers (validating
-  // against the base schema) will reject.
-  if (base.additionalProperties === false && next.additionalProperties !== false) {
+  // If base was a "closed" object (no extra fields allowed), and next explicitly opens it up,
+  // that is a producer-widening change: the producer can start sending new fields that consumers
+  // (validating against the base schema) will reject.
+  //
+  // IMPORTANT: when `next` is *inferred* from a payload sample, the inference process typically
+  // omits `additionalProperties` entirely. Treating `undefined` as "opened" would create noisy
+  // false positives for any base schema that uses `additionalProperties:false`.
+  if (base.additionalProperties === false && next.additionalProperties === true) {
     reasons.push(`additionalProperties opened`);
   }
 
@@ -240,8 +244,11 @@ function isBreakingConstraintChanges(base: NodeInfo, next: NodeInfo): string[] {
     if (next.additionalProperties === false) {
       // tightening: previously extra keys were allowed (with constraints), now they're forbidden.
       // For producer-change diff, that's not breaking.
-    } else {
+    } else if (next.additionalProperties === true) {
+      // Explicitly switching to `true` removes the subschema constraint.
       reasons.push(`additionalProperties schema loosened`);
+    } else {
+      // `undefined` means "unspecified" (common for inferred schemas) — don't treat as breaking.
     }
   }
 
@@ -412,6 +419,37 @@ export function summarizeDiff(baseSchema: any, nextSchema: any) {
     if (isPropertyPointer && parentBase?.type === "object" && parentBase.additionalProperties === false) {
       constraintsChanged.push(`${ptr} (added under closed object ${parentPtr})`);
       continue;
+    }
+
+    // If base allows additionalProperties but constrains them with a subschema, then adding a new
+    // property key is only safe if the *value type* is compatible with that subschema.
+    //
+    // We intentionally keep this check type-only:
+    // - the inferred schema for the new key is derived from a single sample, and will not contain
+    //   many constraints (maxLength, patterns, etc.), so comparing constraints would be noisy.
+    // - a type incompatibility is a strong signal that the sample would fail validation under the
+    //   base schema's additionalProperties subschema.
+    const parentAPIsSchema =
+      isPropertyPointer &&
+      parentBase?.type === "object" &&
+      parentBase.additionalProperties !== undefined &&
+      parentBase.additionalProperties !== null &&
+      typeof parentBase.additionalProperties === "object";
+
+    if (parentAPIsSchema) {
+      const apPtr =
+        parentPtr === "/" ? `/${WCCI_ADDITIONAL_PROPERTIES_TOKEN}` : `${parentPtr}/${WCCI_ADDITIONAL_PROPERTIES_TOKEN}`;
+      const baseAp = baseIdx.get(apPtr);
+      const nextChild = nextIdx.get(ptr);
+
+      if (baseAp && nextChild && isBreakingTypeChange(baseAp.type, nextChild.type)) {
+        constraintsChanged.push(
+          `${ptr} (added key violates additionalProperties schema at ${parentPtr}: ${JSON.stringify(
+            baseAp.type
+          )} -> ${JSON.stringify(nextChild.type)})`
+        );
+        continue;
+      }
     }
 
     added.push(ptr);

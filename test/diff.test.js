@@ -451,6 +451,63 @@ test("diff: loosening additionalProperties schema -> true is breaking", () => {
   assert.match(r.breaking.constraintsChanged[0], /^\/ \(additionalProperties schema loosened\)$/);
 });
 
+test("diff: base additionalProperties:false vs next unspecified does not count as opened", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: false,
+    properties: { id: { type: "string" } },
+    required: ["id"],
+  });
+
+  // Common shape for inferred schemas: omit `additionalProperties`.
+  const next = normalizeToJsonSchema({
+    type: "object",
+    properties: { id: { type: "string" } },
+    required: ["id"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount, 0);
+});
+
+test("diff: added key under additionalProperties subschema is breaking if value type is incompatible", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: { type: "string" },
+    properties: { id: { type: "string" } },
+    required: ["id"],
+  });
+
+  const nextBad = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: { type: "string" },
+    properties: {
+      id: { type: "string" },
+      // new additionalProperties key with incompatible type
+      extra: { type: "number" },
+    },
+    required: ["id", "extra"],
+  });
+
+  const r1 = summarizeDiff(base, nextBad);
+  assert.equal(r1.breakingCount > 0, true);
+  assert.equal(r1.breaking.constraintsChanged.length, 1);
+  assert.match(r1.breaking.constraintsChanged[0], /^\/extra/);
+
+  const nextOk = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: { type: "string" },
+    properties: {
+      id: { type: "string" },
+      extra: { type: "string" },
+    },
+    required: ["id", "extra"],
+  });
+
+  const r2 = summarizeDiff(base, nextOk);
+  assert.equal(r2.breakingCount, 0);
+});
+
 test("diff: widening additionalProperties subschema is breaking", () => {
   const base = normalizeToJsonSchema({
     type: "object",
