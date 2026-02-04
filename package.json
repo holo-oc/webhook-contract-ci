@@ -27,10 +27,13 @@
   "scripts": {
     "test": "npm run build && node --test",
     "build": "tsc -p tsconfig.json",
+    "bundle": "node scripts/bundle.mjs",
+    "build:dist": "npm run build && npm run bundle",
     "dev": "tsx src/cli.ts",
     "demo:ok": "npm run build && node dist/cli.js diff --base examples/schema.json --next examples/payload.json --show-nonbreaking",
     "demo:breaking": "npm run build && node dist/cli.js diff --base examples/schema.json --next examples/payload-breaking.json --show-nonbreaking",
-    "demo:breaking:json": "npm run build && node dist/cli.js diff --base examples/schema.json --next examples/payload-breaking.json --show-nonbreaking --json"
+    "demo:breaking:json": "npm run build && node dist/cli.js diff --base examples/schema.json --next examples/payload-breaking.json --show-nonbreaking --json",
+    "demo:ok:action": "npm run build:dist && node dist/bundle/cli.cjs diff --base examples/schema.json --next examples/payload.json --show-nonbreaking"
   },
 
   "keywords": [],
@@ -44,6 +47,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.2.0",
+    "esbuild": "^0.25.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }

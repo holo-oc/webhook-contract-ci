@@ -21,13 +21,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install wcci dependencies
-      shell: bash
-      run: |
-        cd "${{ github.action_path }}"
-        npm ci --omit=dev
-
-    - name: Run wcci
+    - name: Run wcci (bundled)
       shell: bash
       run: |
         MODE="${{ inputs.mode }}"
@@ -51,7 +45,7 @@ runs:
           EXTRA="--show-nonbreaking"
         fi
 
-        CLI="$GITHUB_ACTION_PATH/dist/cli.js"
+        CLI="$GITHUB_ACTION_PATH/dist/bundle/cli.cjs"
 
         if [ "$MODE" = "infer" ]; then
           node "$CLI" infer --in "$PAYLOAD" --out "$SCHEMA"

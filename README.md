@@ -60,7 +60,9 @@ It treats these as **non-breaking**:
 - optional paths are removed (only reported when the *next* parent object is explicitly closed with `additionalProperties:false`; otherwise removals are ambiguous in single-sample inference)
 
 ## GitHub Action
-This repo ships a composite action (see `action.yml`).
+This repo ships a composite action (see `action.yml`) that runs a **bundled** CLI (`dist/bundle/cli.cjs`).
+
+That means the action does **not** run `npm ci` at runtime (faster, no registry flakiness).
 
 **Important:** `schema` and `payload` inputs are resolved relative to your repo root (`GITHUB_WORKSPACE`).
 
