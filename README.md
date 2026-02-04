@@ -100,6 +100,8 @@ jobs:
 
 (Also see `examples/workflows/webhook-contract.yml` and `examples/workflows/webhook-contract-pr.yml`.)
 
+There’s also a copy/paste-ready **mini example repo** under `examples/example-repo/` (workflow + sample schema/payload).
+
 ## CLI
 
 ### Quick local demo ("wow" in 10 seconds)

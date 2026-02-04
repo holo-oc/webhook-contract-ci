@@ -1,0 +1,26 @@
+name: Webhook contract
+on:
+  pull_request:
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Load base schema
+        run: |
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          git show "origin/${{ github.base_ref }}:schemas/webhook.schema.json" > /tmp/webhook.base.schema.json
+
+      # For testing inside this repo, `uses: ./` works.
+      # In a real repo, pin a tag/sha.
+      - name: Diff webhook payload vs base schema
+        uses: ./
+        with:
+          mode: diff
+          schema: /tmp/webhook.base.schema.json
+          payload: samples/webhook.payload.json
+          show_nonbreaking: true

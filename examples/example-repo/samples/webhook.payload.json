@@ -1,0 +1,8 @@
+{
+  "id": "evt_123",
+  "type": "demo.created",
+  "data": {
+    "amount": 100,
+    "currency": "JPY"
+  }
+}
