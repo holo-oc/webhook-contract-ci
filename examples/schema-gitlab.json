@@ -1,0 +1,198 @@
+{
+  "type": "object",
+  "properties": {
+    "after": {
+      "type": "string"
+    },
+    "before": {
+      "type": "string"
+    },
+    "checkout_sha": {
+      "type": "string"
+    },
+    "commits": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "event_name": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "object_kind": {
+      "type": "string"
+    },
+    "project": {
+      "type": "object",
+      "properties": {
+        "avatar_url": {
+          "type": "null"
+        },
+        "ci_config_path": {
+          "type": "null"
+        },
+        "default_branch": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "git_http_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "git_ssh_url": {
+          "type": "string",
+          "format": "style"
+        },
+        "homepage": {
+          "type": "string",
+          "format": "uri"
+        },
+        "http_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "path_with_namespace": {
+          "type": "string"
+        },
+        "ssh_url": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "format": "style"
+        },
+        "visibility_level": {
+          "type": "integer"
+        },
+        "web_url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "avatar_url",
+        "ci_config_path",
+        "default_branch",
+        "description",
+        "git_http_url",
+        "git_ssh_url",
+        "homepage",
+        "http_url",
+        "id",
+        "name",
+        "namespace",
+        "path_with_namespace",
+        "ssh_url",
+        "url",
+        "visibility_level",
+        "web_url"
+      ]
+    },
+    "project_id": {
+      "type": "integer"
+    },
+    "push_options": {
+      "type": "object"
+    },
+    "ref": {
+      "type": "string"
+    },
+    "ref_protected": {
+      "type": "boolean"
+    },
+    "repository": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "git_http_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "git_ssh_url": {
+          "type": "string",
+          "format": "style"
+        },
+        "homepage": {
+          "type": "string",
+          "format": "uri"
+        },
+        "name": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "format": "style"
+        },
+        "visibility_level": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "description",
+        "git_http_url",
+        "git_ssh_url",
+        "homepage",
+        "name",
+        "url",
+        "visibility_level"
+      ]
+    },
+    "total_commits_count": {
+      "type": "integer"
+    },
+    "user_avatar": {
+      "type": "string",
+      "format": "uri"
+    },
+    "user_email": {
+      "type": "string",
+      "format": "email"
+    },
+    "user_id": {
+      "type": "integer"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "user_username": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "after",
+    "before",
+    "checkout_sha",
+    "commits",
+    "event_name",
+    "message",
+    "object_kind",
+    "project",
+    "project_id",
+    "push_options",
+    "ref",
+    "ref_protected",
+    "repository",
+    "total_commits_count",
+    "user_avatar",
+    "user_email",
+    "user_id",
+    "user_name",
+    "user_username"
+  ]
+}

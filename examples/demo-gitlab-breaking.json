@@ -1,0 +1,95 @@
+{
+  "ok": false,
+  "breakingCount": 2,
+  "breaking": {
+    "removedRequired": [
+      "/checkout_sha",
+      "/ref_protected"
+    ],
+    "requiredBecameOptional": [],
+    "typeChanged": [],
+    "constraintsChanged": []
+  },
+  "nonBreaking": {
+    "added": [
+      "/commits/*/added",
+      "/commits/*/added/*",
+      "/commits/*/author",
+      "/commits/*/author/email",
+      "/commits/*/author/name",
+      "/commits/*/id",
+      "/commits/*/message",
+      "/commits/*/modified",
+      "/commits/*/modified/*",
+      "/commits/*/removed",
+      "/commits/*/timestamp",
+      "/commits/*/title",
+      "/commits/*/url"
+    ],
+    "removedOptional": []
+  },
+  "breakingPaths": [
+    {
+      "kind": "removedRequired",
+      "pointer": "/checkout_sha"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/ref_protected"
+    }
+  ],
+  "nonBreakingPaths": [
+    {
+      "kind": "added",
+      "pointer": "/commits/*/added"
+    },
+    {
+      "kind": "added",
+      "pointer": "/commits/*/added/*"
+    },
+    {
+      "kind": "added",
+      "pointer": "/commits/*/author"
+    },
+    {
+      "kind": "added",
+      "pointer": "/commits/*/author/email"
+    },
+    {
+      "kind": "added",
+      "pointer": "/commits/*/author/name"
+    },
+    {
+      "kind": "added",
+      "pointer": "/commits/*/id"
+    },
+    {
+      "kind": "added",
+      "pointer": "/commits/*/message"
+    },
+    {
+      "kind": "added",
+      "pointer": "/commits/*/modified"
+    },
+    {
+      "kind": "added",
+      "pointer": "/commits/*/modified/*"
+    },
+    {
+      "kind": "added",
+      "pointer": "/commits/*/removed"
+    },
+    {
+      "kind": "added",
+      "pointer": "/commits/*/timestamp"
+    },
+    {
+      "kind": "added",
+      "pointer": "/commits/*/title"
+    },
+    {
+      "kind": "added",
+      "pointer": "/commits/*/url"
+    }
+  ]
+}

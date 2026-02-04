@@ -1,0 +1,14 @@
+added paths:
+- /commits/*/added
+- /commits/*/added/*
+- /commits/*/author
+- /commits/*/author/email
+- /commits/*/author/name
+- /commits/*/id
+- /commits/*/message
+- /commits/*/modified
+- /commits/*/modified/*
+- /commits/*/removed
+- /commits/*/timestamp
+- /commits/*/title
+- /commits/*/url
