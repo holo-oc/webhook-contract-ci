@@ -1211,3 +1211,44 @@ test("diff: property named 'items' does not collide with array items sentinel", 
   assert.equal(r.breaking.constraintsChanged.length, 1);
   assert.match(r.breaking.constraintsChanged[0], /^\/extra/);
 });
+
+test("diff: resolves local $ref (#/...) when indexing schemas", () => {
+  const base = normalizeToJsonSchema({
+    definitions: {
+      Foo: {
+        type: "object",
+        properties: {
+          id: { type: "string" },
+        },
+        required: ["id"],
+      },
+    },
+    type: "object",
+    properties: {
+      foo: { $ref: "#/definitions/Foo" },
+    },
+    required: ["foo"],
+  });
+
+  const next = normalizeToJsonSchema({
+    definitions: {
+      Foo: {
+        type: "object",
+        properties: {
+          id: { type: "number" },
+        },
+        required: ["id"],
+      },
+    },
+    type: "object",
+    properties: {
+      foo: { $ref: "#/definitions/Foo" },
+    },
+    required: ["foo"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.equal(r.breaking.typeChanged.length, 1);
+  assert.match(r.breaking.typeChanged[0], /^\/foo\/id/);
+});

@@ -454,11 +454,61 @@ function escapePointerToken(token) {
 const WCCI_ITEMS_TOKEN = "__wcci_items";
 const WCCI_TUPLE_ITEMS_TOKEN = "__wcci_tupleItems";
 const WCCI_ADDITIONAL_PROPERTIES_TOKEN = "__wcci_additionalProperties";
+function unescapePointerToken(token) {
+    return token.replace(/~1/g, "/").replace(/~0/g, "~");
+}
+function getByJsonPointer(root, ptr) {
+    // Supports pointers like "#/components/schemas/Foo" or "#/definitions/Foo".
+    // Returns undefined if any segment is missing.
+    if (ptr === "#" || ptr === "#/")
+        return root;
+    if (!ptr.startsWith("#/"))
+        return undefined;
+    const tokens = ptr
+        .slice(2)
+        .split("/")
+        .map((t) => unescapePointerToken(t));
+    let cur = root;
+    for (const t of tokens) {
+        if (!cur || typeof cur !== "object")
+            return undefined;
+        cur = cur[t];
+    }
+    return cur;
+}
+function resolveLocalRef(root, node) {
+    if (!node || typeof node !== "object")
+        return node;
+    const ref = node.$ref;
+    if (typeof ref !== "string")
+        return node;
+    // Only resolve local refs ("#...") deterministically. Remote refs are intentionally ignored.
+    if (!ref.startsWith("#"))
+        return node;
+    const seen = new Set();
+    let curNode = node;
+    while (curNode && typeof curNode === "object" && typeof curNode.$ref === "string" && curNode.$ref.startsWith("#")) {
+        const r = curNode.$ref;
+        if (seen.has(r))
+            break; // cycle
+        seen.add(r);
+        const target = getByJsonPointer(root, r);
+        if (!target || typeof target !== "object")
+            break;
+        // Merge: referenced schema provides defaults; local keys override.
+        const { $ref, ...local } = curNode;
+        curNode = { ...target, ...local };
+    }
+    return curNode;
+}
 export function indexSchema(schema) {
     const out = new Map();
     function walk(node, pointer, required) {
         if (!node || typeof node !== "object")
             return;
+        // Resolve local $ref indirections so diff semantics work for common OpenAPI/JSON Schema layouts.
+        // Note: we intentionally do not resolve remote refs.
+        node = resolveLocalRef(schema, node);
         const info = {
             pointer,
             type: extractTypeFromSchemaNode(node),
