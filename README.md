@@ -112,6 +112,7 @@ From this repo:
 npm ci
 npm run demo:ok
 npm run demo:breaking
+npm run demo:breaking:json
 ```
 
 Example output (breaking):

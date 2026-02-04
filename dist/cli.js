@@ -104,11 +104,27 @@ async function main() {
             console.log(JSON.stringify(res, null, 2));
         }
         if (argFlag("--json")) {
+            // Convenience: include flattened path lists for consumers that don't want to
+            // inspect each category.
+            const breakingPaths = [
+                ...breaking.removedRequired.map((p) => ({ kind: "removedRequired", pointer: p })),
+                ...breaking.requiredBecameOptional.map((p) => ({ kind: "requiredBecameOptional", pointer: p })),
+                ...breaking.typeChanged.map((p) => ({ kind: "typeChanged", pointer: p })),
+                ...breaking.constraintsChanged.map((p) => ({ kind: "constraintsChanged", pointer: p })),
+            ];
+            const nonBreakingPaths = argFlag("--show-nonbreaking")
+                ? [
+                    ...nonBreaking.added.map((p) => ({ kind: "added", pointer: p })),
+                    ...nonBreaking.removedOptional.map((p) => ({ kind: "removedOptional", pointer: p })),
+                ]
+                : undefined;
             const out = {
                 ok: breakingCount === 0,
                 breakingCount,
                 breaking,
                 nonBreaking: argFlag("--show-nonbreaking") ? nonBreaking : undefined,
+                breakingPaths,
+                nonBreakingPaths,
             };
             console.log(JSON.stringify(out, null, 2));
             if (breakingCount > 0)

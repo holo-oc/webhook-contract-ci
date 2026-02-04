@@ -29,7 +29,8 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsx src/cli.ts",
     "demo:ok": "npm run build && node dist/cli.js diff --base examples/schema.json --next examples/payload.json --show-nonbreaking",
-    "demo:breaking": "npm run build && node dist/cli.js diff --base examples/schema.json --next examples/payload-breaking.json --show-nonbreaking"
+    "demo:breaking": "npm run build && node dist/cli.js diff --base examples/schema.json --next examples/payload-breaking.json --show-nonbreaking",
+    "demo:breaking:json": "npm run build && node dist/cli.js diff --base examples/schema.json --next examples/payload-breaking.json --show-nonbreaking --json"
   },
 
   "keywords": [],
