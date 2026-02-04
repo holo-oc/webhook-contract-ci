@@ -1,0 +1,9 @@
+breaking webhook payload changes detected:
+removed required paths:
+- /action
+- /issue/title
+- /issue/url
+- /repository/full_name
+- /repository/id
+- /sender
+- /sender/login
