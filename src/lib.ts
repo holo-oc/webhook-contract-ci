@@ -25,6 +25,11 @@ export type NodeInfo = {
   // Object-only constraints
   additionalProperties?: boolean | object;
 
+  // Object map constraints
+  // When present, constrains the *names* of properties allowed on an object.
+  // Common for "metadata" style maps.
+  propertyNamesPattern?: string;
+
   minimum?: number;
   exclusiveMinimum?: number;
   maximum?: number;
@@ -478,6 +483,17 @@ function isBreakingConstraintChanges(base: NodeInfo, next: NodeInfo): string[] {
   if (typeof base.pattern === "string" && typeof next.pattern === "string") {
     if (base.pattern !== next.pattern) reasons.push(`pattern changed`);
   }
+
+  // propertyNames.pattern
+  // Similar story: only treat changes as breaking when both are explicitly present.
+  if (
+    typeof (base as any).propertyNamesPattern === "string" &&
+    typeof (next as any).propertyNamesPattern === "string"
+  ) {
+    if ((base as any).propertyNamesPattern !== (next as any).propertyNamesPattern) {
+      reasons.push(`propertyNames pattern changed`);
+    }
+  }
   cmp("maxItems", "maxItems", "max");
   cmp("minItems", "minItems", "min");
   cmp("maxProperties", "maxProperties", "max");
@@ -512,6 +528,14 @@ export function indexSchema(schema: any): Map<string, NodeInfo> {
       additionalProperties:
         node.type === "object" || (node.properties && typeof node.properties === "object")
           ? (node.additionalProperties as any)
+          : undefined,
+
+      propertyNamesPattern:
+        (node.type === "object" || (node.properties && typeof node.properties === "object")) &&
+        node.propertyNames &&
+        typeof node.propertyNames === "object" &&
+        typeof node.propertyNames.pattern === "string"
+          ? node.propertyNames.pattern
           : undefined,
 
       minimum: typeof node.minimum === "number" ? node.minimum : undefined,

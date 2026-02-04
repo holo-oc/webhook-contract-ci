@@ -7,6 +7,7 @@ export type NodeInfo = {
     enum?: unknown[];
     const?: unknown;
     additionalProperties?: boolean | object;
+    propertyNamesPattern?: string;
     minimum?: number;
     exclusiveMinimum?: number;
     maximum?: number;

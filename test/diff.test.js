@@ -495,6 +495,67 @@ test("diff: base pattern vs next missing pattern is ignored (avoid noisy inferen
   assert.equal(r.breakingCount, 0);
 });
 
+test("diff: propertyNames pattern changes are treated as breaking when explicitly present in both schemas", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      metadata: {
+        type: "object",
+        // Only allow lowercase keys in the map.
+        propertyNames: { pattern: "^[a-z_]+$" },
+        additionalProperties: { type: "string" },
+      },
+    },
+    required: ["metadata"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      metadata: {
+        type: "object",
+        // Widen: now allow digits too.
+        propertyNames: { pattern: "^[a-z0-9_]+$" },
+        additionalProperties: { type: "string" },
+      },
+    },
+    required: ["metadata"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.equal(r.breaking.constraintsChanged.length, 1);
+  assert.match(r.breaking.constraintsChanged[0], /^\/metadata/);
+});
+
+test("diff: base propertyNames pattern vs next missing is ignored (avoid noisy inference gaps)", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      metadata: {
+        type: "object",
+        propertyNames: { pattern: "^[a-z_]+$" },
+        additionalProperties: { type: "string" },
+      },
+    },
+    required: ["metadata"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      metadata: {
+        type: "object",
+        additionalProperties: { type: "string" },
+      },
+    },
+    required: ["metadata"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount, 0);
+});
+
 test("diff: exclusive numeric bound changes are compared across maximum/exclusiveMaximum", () => {
   const baseExclusive = normalizeToJsonSchema({
     type: "object",

@@ -414,6 +414,14 @@ function isBreakingConstraintChanges(base, next) {
         if (base.pattern !== next.pattern)
             reasons.push(`pattern changed`);
     }
+    // propertyNames.pattern
+    // Similar story: only treat changes as breaking when both are explicitly present.
+    if (typeof base.propertyNamesPattern === "string" &&
+        typeof next.propertyNamesPattern === "string") {
+        if (base.propertyNamesPattern !== next.propertyNamesPattern) {
+            reasons.push(`propertyNames pattern changed`);
+        }
+    }
     cmp("maxItems", "maxItems", "max");
     cmp("minItems", "minItems", "min");
     cmp("maxProperties", "maxProperties", "max");
@@ -440,6 +448,12 @@ export function indexSchema(schema) {
             const: node.const,
             additionalProperties: node.type === "object" || (node.properties && typeof node.properties === "object")
                 ? node.additionalProperties
+                : undefined,
+            propertyNamesPattern: (node.type === "object" || (node.properties && typeof node.properties === "object")) &&
+                node.propertyNames &&
+                typeof node.propertyNames === "object" &&
+                typeof node.propertyNames.pattern === "string"
+                ? node.propertyNames.pattern
                 : undefined,
             minimum: typeof node.minimum === "number" ? node.minimum : undefined,
             exclusiveMinimum: typeof node.exclusiveMinimum === "number" ? node.exclusiveMinimum : undefined,
