@@ -12,7 +12,12 @@ const providers = [
 ];
 
 function runDemo(provider, variant) {
-  const cmd = `npm run build && node dist/cli.js diff --base examples/schema-${provider}.json --next examples/payload-${provider}-${variant === 'ok' ? '' : 'breaking'}.json --show-nonbreaking ${variant === 'json' ? '--json' : ''}`;
+  const getPayloadFilename = (provider: string, variant: string): string => {
+  if (variant === 'ok') return `payload-${provider}.json`;
+  return `payload-${provider}-breaking.json`;
+};
+
+const cmd = `npm run build && node dist/cli.js diff --base examples/schema-${provider}.json --next examples/${getPayloadFilename(provider, variant)} --show-nonbreaking ${variant === 'json' ? '--json' : ''}`;
   try {
     const out = execSync(cmd, { cwd: repoRoot, encoding: 'utf8', timeout: 30000 });
     return out.trim();
