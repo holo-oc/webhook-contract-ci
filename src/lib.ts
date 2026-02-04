@@ -43,6 +43,14 @@ export type NodeInfo = {
   // String constraints
   pattern?: string;
 
+  // Semantic string constraints (OpenAPI / JSON Schema)
+  // These are often used by webhook contracts (ids, timestamps, urls).
+  // We only treat changes as breaking when both base and next explicitly specify them,
+  // to avoid noisy false positives from inferred schemas.
+  format?: string;
+  contentEncoding?: string;
+  contentMediaType?: string;
+
   // Array constraints
   minItems?: number;
   maxItems?: number;
@@ -484,6 +492,29 @@ function isBreakingConstraintChanges(base: NodeInfo, next: NodeInfo): string[] {
     if (base.pattern !== next.pattern) reasons.push(`pattern changed`);
   }
 
+  // format/contentEncoding/contentMediaType
+  // We can't reliably reason about subset/superset between arbitrary formats/encodings.
+  // Treat explicit changes as breaking; ignore missing `next.*` to avoid noisy inference gaps.
+  if (typeof (base as any).format === "string" && typeof (next as any).format === "string") {
+    if ((base as any).format !== (next as any).format) reasons.push(`format changed`);
+  }
+  if (
+    typeof (base as any).contentEncoding === "string" &&
+    typeof (next as any).contentEncoding === "string"
+  ) {
+    if ((base as any).contentEncoding !== (next as any).contentEncoding) {
+      reasons.push(`contentEncoding changed`);
+    }
+  }
+  if (
+    typeof (base as any).contentMediaType === "string" &&
+    typeof (next as any).contentMediaType === "string"
+  ) {
+    if ((base as any).contentMediaType !== (next as any).contentMediaType) {
+      reasons.push(`contentMediaType changed`);
+    }
+  }
+
   // propertyNames.pattern
   // Similar story: only treat changes as breaking when both are explicitly present.
   if (
@@ -548,6 +579,10 @@ export function indexSchema(schema: any): Map<string, NodeInfo> {
       minLength: typeof node.minLength === "number" ? node.minLength : undefined,
       maxLength: typeof node.maxLength === "number" ? node.maxLength : undefined,
       pattern: typeof node.pattern === "string" ? node.pattern : undefined,
+
+      format: typeof node.format === "string" ? node.format : undefined,
+      contentEncoding: typeof node.contentEncoding === "string" ? node.contentEncoding : undefined,
+      contentMediaType: typeof node.contentMediaType === "string" ? node.contentMediaType : undefined,
 
       minItems: typeof node.minItems === "number" ? node.minItems : undefined,
       maxItems: typeof node.maxItems === "number" ? node.maxItems : undefined,

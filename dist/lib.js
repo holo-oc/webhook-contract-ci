@@ -414,6 +414,25 @@ function isBreakingConstraintChanges(base, next) {
         if (base.pattern !== next.pattern)
             reasons.push(`pattern changed`);
     }
+    // format/contentEncoding/contentMediaType
+    // We can't reliably reason about subset/superset between arbitrary formats/encodings.
+    // Treat explicit changes as breaking; ignore missing `next.*` to avoid noisy inference gaps.
+    if (typeof base.format === "string" && typeof next.format === "string") {
+        if (base.format !== next.format)
+            reasons.push(`format changed`);
+    }
+    if (typeof base.contentEncoding === "string" &&
+        typeof next.contentEncoding === "string") {
+        if (base.contentEncoding !== next.contentEncoding) {
+            reasons.push(`contentEncoding changed`);
+        }
+    }
+    if (typeof base.contentMediaType === "string" &&
+        typeof next.contentMediaType === "string") {
+        if (base.contentMediaType !== next.contentMediaType) {
+            reasons.push(`contentMediaType changed`);
+        }
+    }
     // propertyNames.pattern
     // Similar story: only treat changes as breaking when both are explicitly present.
     if (typeof base.propertyNamesPattern === "string" &&
@@ -463,6 +482,9 @@ export function indexSchema(schema) {
             minLength: typeof node.minLength === "number" ? node.minLength : undefined,
             maxLength: typeof node.maxLength === "number" ? node.maxLength : undefined,
             pattern: typeof node.pattern === "string" ? node.pattern : undefined,
+            format: typeof node.format === "string" ? node.format : undefined,
+            contentEncoding: typeof node.contentEncoding === "string" ? node.contentEncoding : undefined,
+            contentMediaType: typeof node.contentMediaType === "string" ? node.contentMediaType : undefined,
             minItems: typeof node.minItems === "number" ? node.minItems : undefined,
             maxItems: typeof node.maxItems === "number" ? node.maxItems : undefined,
             minProperties: typeof node.minProperties === "number" ? node.minProperties : undefined,

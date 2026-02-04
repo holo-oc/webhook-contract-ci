@@ -16,6 +16,9 @@ export type NodeInfo = {
     minLength?: number;
     maxLength?: number;
     pattern?: string;
+    format?: string;
+    contentEncoding?: string;
+    contentMediaType?: string;
     minItems?: number;
     maxItems?: number;
     minProperties?: number;

@@ -556,6 +556,68 @@ test("diff: base propertyNames pattern vs next missing is ignored (avoid noisy i
   assert.equal(r.breakingCount, 0);
 });
 
+test("diff: format/contentEncoding/contentMediaType changes are breaking only when both explicit", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      id: { type: "string", format: "uuid" },
+      blob: { type: "string", contentEncoding: "base64", contentMediaType: "application/json" },
+    },
+    required: ["id", "blob"],
+  });
+
+  // Explicit change => breaking
+  const nextChanged = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      id: { type: "string", format: "email" },
+      blob: { type: "string", contentEncoding: "base64url", contentMediaType: "application/octet-stream" },
+    },
+    required: ["id", "blob"],
+  });
+
+  const r1 = summarizeDiff(base, nextChanged);
+  assert.equal(r1.breakingCount > 0, true);
+  assert.equal(r1.breaking.constraintsChanged.some((x) => x.startsWith("/id (format changed")), true);
+  assert.equal(
+    r1.breaking.constraintsChanged.some((x) => x.startsWith("/blob (contentEncoding changed")),
+    true
+  );
+  assert.equal(
+    r1.breaking.constraintsChanged.some((x) => x.startsWith("/blob (contentMediaType changed")),
+    true
+  );
+
+  // Missing next constraint => ignored (avoid noisy inference gaps)
+  const nextMissing = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      id: { type: "string" },
+      blob: { type: "string" },
+    },
+    required: ["id", "blob"],
+  });
+
+  const r2 = summarizeDiff(base, nextMissing);
+  assert.equal(r2.breakingCount, 0);
+
+  // Adding a constraint (tightening) => non-breaking for producer-change diff
+  const baseNoFmt = normalizeToJsonSchema({
+    type: "object",
+    properties: { id: { type: "string" } },
+    required: ["id"],
+  });
+
+  const nextAddsFmt = normalizeToJsonSchema({
+    type: "object",
+    properties: { id: { type: "string", format: "uuid" } },
+    required: ["id"],
+  });
+
+  const r3 = summarizeDiff(baseNoFmt, nextAddsFmt);
+  assert.equal(r3.breakingCount, 0);
+});
+
 test("diff: exclusive numeric bound changes are compared across maximum/exclusiveMaximum", () => {
   const baseExclusive = normalizeToJsonSchema({
     type: "object",
