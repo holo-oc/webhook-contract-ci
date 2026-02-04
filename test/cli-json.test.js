@@ -46,21 +46,44 @@ test("cli: diff --json exit 1 on breaking changes and includes nonBreaking only 
 });
 
 test("cli: diff --json breakingPaths includes pointer+detail for typeChanged/constraintsChanged", () => {
-  const base = path.join(repoRoot, "examples", "schema.json");
-  const next = path.join(repoRoot, "examples", "payload-typechange.json");
+  // typeChanged
+  {
+    const base = path.join(repoRoot, "examples", "schema.json");
+    const next = path.join(repoRoot, "examples", "payload-typechange.json");
 
-  const r = run(["diff", "--base", base, "--next", next, "--json"]);
-  assert.equal(r.status, 1);
+    const r = run(["diff", "--base", base, "--next", next, "--json"]);
+    assert.equal(r.status, 1);
 
-  const obj = JSON.parse(r.stdout);
-  assert.equal(obj.ok, false);
-  assert.equal(obj.breaking.typeChanged.length, 1);
+    const obj = JSON.parse(r.stdout);
+    assert.equal(obj.ok, false);
+    assert.equal(obj.breaking.typeChanged.length, 1);
 
-  const typeEntry = obj.breakingPaths.find((x) => x.kind === "typeChanged");
-  assert.equal(typeof typeEntry.pointer, "string");
-  assert.equal(typeEntry.pointer, "/id");
-  assert.equal(typeof typeEntry.detail, "string");
-  assert.match(typeEntry.detail, /->/);
+    const typeEntry = obj.breakingPaths.find((x) => x.kind === "typeChanged");
+    assert.equal(typeof typeEntry.pointer, "string");
+    assert.equal(typeEntry.pointer, "/id");
+    assert.equal(typeof typeEntry.detail, "string");
+    assert.match(typeEntry.detail, /->/);
+    assert.equal(typeEntry.detail.endsWith(")"), false);
+  }
+
+  // constraintsChanged (added under closed object)
+  {
+    const base = path.join(repoRoot, "test", "fixtures", "base.closed.schema.json");
+    const next = path.join(repoRoot, "test", "fixtures", "next.closed-added.payload.json");
+
+    const r = run(["diff", "--base", base, "--next", next, "--json"]);
+    assert.equal(r.status, 1);
+
+    const obj = JSON.parse(r.stdout);
+    assert.equal(obj.ok, false);
+    assert.equal(obj.breaking.constraintsChanged.length, 1);
+
+    const entry = obj.breakingPaths.find((x) => x.kind === "constraintsChanged");
+    assert.equal(entry.pointer, "/b");
+    assert.equal(typeof entry.detail, "string");
+    assert.match(entry.detail, /closed object/);
+    assert.equal(entry.detail.endsWith(")"), false);
+  }
 });
 
 test("cli: check --json returns ok=false and formatted errors", () => {

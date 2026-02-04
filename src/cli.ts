@@ -138,13 +138,11 @@ async function main() {
         // - "/path"
         // - "/path (details...)"
         // - "/path (old -> new)"
-        const i = entry.indexOf(" (");
-        if (i === -1) return { pointer: entry };
-
-        let detail = entry.slice(i + 2).trim(); // starts at "("
-        if (detail.startsWith("(") && detail.endsWith(")")) detail = detail.slice(1, -1);
-
-        return { pointer: entry.slice(0, i), detail };
+        //
+        // Keep this parsing strict + deterministic for downstream machine consumers.
+        const m = entry.match(/^(.*) \((.*)\)$/);
+        if (!m) return { pointer: entry };
+        return { pointer: m[1]!, detail: m[2]! };
       };
 
       const breakingPaths = [
