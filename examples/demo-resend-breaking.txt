@@ -1,0 +1,6 @@
+breaking webhook payload changes detected:
+removed required paths:
+- /data/bounce
+- /data/bounce/message
+- /data/bounce/subType
+- /data/bounce/type

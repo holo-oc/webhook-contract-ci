@@ -1,0 +1,90 @@
+{
+  "type": "object",
+  "properties": {
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "bounce": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string"
+            },
+            "subType": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "message",
+            "subType",
+            "type"
+          ]
+        },
+        "broadcast_id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "email_id": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "category"
+          ]
+        },
+        "template_id": {
+          "type": "string"
+        },
+        "to": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "email",
+            "required": true
+          }
+        }
+      },
+      "required": [
+        "bounce",
+        "broadcast_id",
+        "created_at",
+        "email_id",
+        "from",
+        "subject",
+        "tags",
+        "template_id",
+        "to"
+      ]
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "created_at",
+    "data",
+    "type"
+  ]
+}

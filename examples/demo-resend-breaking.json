@@ -1,0 +1,38 @@
+{
+  "ok": false,
+  "breakingCount": 4,
+  "breaking": {
+    "removedRequired": [
+      "/data/bounce",
+      "/data/bounce/message",
+      "/data/bounce/subType",
+      "/data/bounce/type"
+    ],
+    "requiredBecameOptional": [],
+    "typeChanged": [],
+    "constraintsChanged": []
+  },
+  "nonBreaking": {
+    "added": [],
+    "removedOptional": []
+  },
+  "breakingPaths": [
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/bounce"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/bounce/message"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/bounce/subType"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/bounce/type"
+    }
+  ],
+  "nonBreakingPaths": []
+}
