@@ -57,7 +57,7 @@
     "ci",
     "schema-diff"
   ],
-  "author": "",
+  "author": "holo-oc <holo-oc@github> (https://github.com/holo-oc)",
   "license": "MIT",
   "dependencies": {
     "ajv": "^8.17.1",
