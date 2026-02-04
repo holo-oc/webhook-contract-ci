@@ -53,7 +53,7 @@ It treats these as **breaking** (exit code `1`):
 It treats these as **non-breaking**:
 
 - new paths are added
-- optional paths are removed
+- optional paths are removed (only reported when the *next* parent object is explicitly closed with `additionalProperties:false`; otherwise removals are ambiguous in single-sample inference)
 
 ## GitHub Action
 This repo ships a composite action (see `action.yml`).

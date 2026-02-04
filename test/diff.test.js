@@ -469,7 +469,7 @@ test("diff: missing inferred type for an OPTIONAL field is non-breaking (avoid n
   assert.deepEqual(r.breaking.typeChanged, []);
 });
 
-test("diff: added fields + removed optional fields are non-breaking", () => {
+test("diff: added fields are non-breaking; optional removals are only reported when next parent is closed", () => {
   const base = normalizeToJsonSchema(readJson("base.schema.json"));
 
   // Remove optional "opt" from next, add new fields.
@@ -482,8 +482,34 @@ test("diff: added fields + removed optional fields are non-breaking", () => {
   assert(nonBreaking.added.includes("/addedTop"));
   assert(nonBreaking.added.includes("/nested/newField"));
 
-  // Optional removal should be tracked as non-breaking.
-  assert.deepEqual(nonBreaking.removedOptional, ["/opt"]);
+  // Because next is inferred and the parent object isn't explicitly closed,
+  // we do not claim optional keys were "removed".
+  assert.deepEqual(nonBreaking.removedOptional, []);
+});
+
+test("diff: removed optional key is reported when next parent object is closed", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      id: { type: "string" },
+      opt: { type: "string" },
+    },
+    required: ["id"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      id: { type: "string" },
+    },
+    required: ["id"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount, 0);
+  assert.deepEqual(r.nonBreaking.removedOptional, ["/opt"]);
 });
 
 test("diff: adding a property under an additionalProperties:false object is breaking", () => {

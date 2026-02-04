@@ -381,13 +381,35 @@ export function summarizeDiff(baseSchema, nextSchema) {
     const requiredBecameOptional = [];
     const typeChanged = [];
     const constraintsChanged = [];
+    const lastTokenOf = (p) => (p === "/" ? "" : p.slice(p.lastIndexOf("/") + 1));
+    const parentPtrOf = (p) => {
+        const i = p.lastIndexOf("/");
+        return i <= 0 ? "/" : p.slice(0, i);
+    };
+    const isPropertyPointer = (p) => {
+        const t = lastTokenOf(p);
+        return t !== WCCI_ITEMS_TOKEN && t !== WCCI_ADDITIONAL_PROPERTIES_TOKEN;
+    };
     for (const [ptr, b] of baseIdx.entries()) {
         const n = nextIdx.get(ptr);
         if (!n) {
-            if (b.required)
+            if (b.required) {
                 removedRequired.push(displayPointer(ptr));
-            else
-                removedOptional.push(displayPointer(ptr));
+            }
+            else {
+                // Optional removals are ambiguous when `next` is inferred from a single payload sample:
+                // the producer might still send the optional key in other events.
+                //
+                // We only report "removed optional" when the *next* parent object is explicitly closed
+                // (`additionalProperties:false`), meaning the key is no longer allowed.
+                if (isPropertyPointer(ptr)) {
+                    const parentPtr = parentPtrOf(ptr);
+                    const nextParent = nextIdx.get(parentPtr);
+                    if (nextParent?.type === "object" && nextParent.additionalProperties === false) {
+                        removedOptional.push(displayPointer(ptr));
+                    }
+                }
+            }
             continue;
         }
         if (b.required && !n.required) {
@@ -406,13 +428,10 @@ export function summarizeDiff(baseSchema, nextSchema) {
         // If the base schema declares an object as "closed" (additionalProperties:false), then adding a
         // new property under that object is breaking: a consumer validating against the base schema
         // will reject payloads containing the new property.
-        const lastSlash = ptr.lastIndexOf("/");
-        const parentPtr = lastSlash <= 0 ? "/" : ptr.slice(0, lastSlash);
+        const parentPtr = parentPtrOf(ptr);
         const parentBase = baseIdx.get(parentPtr);
-        const lastToken = ptr === "/" ? "" : ptr.slice(ptr.lastIndexOf("/") + 1);
-        const isPropertyPointer = lastToken !== WCCI_ITEMS_TOKEN &&
-            lastToken !== WCCI_ADDITIONAL_PROPERTIES_TOKEN;
-        if (isPropertyPointer &&
+        const isPropPtr = isPropertyPointer(ptr);
+        if (isPropPtr &&
             parentBase?.type === "object" &&
             parentBase.additionalProperties === false) {
             constraintsChanged.push(`${displayPointer(ptr)} (added under closed object ${displayPointer(parentPtr)})`);
@@ -426,7 +445,7 @@ export function summarizeDiff(baseSchema, nextSchema) {
         //   many constraints (maxLength, patterns, etc.), so comparing constraints would be noisy.
         // - a type incompatibility is a strong signal that the sample would fail validation under the
         //   base schema's additionalProperties subschema.
-        const parentAPIsSchema = isPropertyPointer &&
+        const parentAPIsSchema = isPropPtr &&
             parentBase?.type === "object" &&
             parentBase.additionalProperties !== undefined &&
             parentBase.additionalProperties !== null &&
