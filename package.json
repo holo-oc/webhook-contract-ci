@@ -38,18 +38,25 @@
     "demo:github:breaking": "npm run build && node dist/cli.js diff --base examples/schema-github.json --next examples/payload-github-breaking.json --show-nonbreaking",
     "demo:shopify": "npm run build && node dist/cli.js diff --base examples/schema-shopify.json --next examples/payload-shopify.json",
     "demo:shopify:breaking": "npm run build && node dist/cli.js diff --base examples/schema-shopify.json --next examples/payload-shopify-breaking.json --show-nonbreaking",
-  "demo:twilio": "npm run build && node dist/cli.js diff --base examples/schema-twilio.json --next examples/payload-twilio.json",
-  "demo:twilio:breaking": "npm run build && node dist/cli.js diff --base examples/schema-twilio.json --next examples/payload-twilio-breaking.json --show-nonbreaking",
-  "demo:intercom": "npm run build && node dist/cli.js diff --base examples/schema-intercom.json --next examples/payload-intercom.json",
-  "demo:intercom:breaking": "npm run build && node dist/cli.js diff --base examples/schema-intercom.json --next examples/payload-intercom-breaking.json --show-nonbreaking",
-  "demo:discord": "npm run build && node dist/cli.js diff --base examples/schema-discord.json --next examples/payload-discord.json",
-  "demo:discord:breaking": "npm run build && node dist/cli.js diff --base examples/schema-discord.json --next examples/payload-discord-breaking.json --show-nonbreaking",
-  "demo:resend": "npm run build && node dist/cli.js diff --base examples/schema-resend.json --next examples/payload-resend.json",
-  "demo:resend:breaking": "npm run build && node dist/cli.js diff --base examples/schema-resend.json --next examples/payload-resend-breaking.json --show-nonbreaking",
-  "demo:postmark": "npm run build && node dist/cli.js diff --base examples/schema-postmark.json --next examples/payload-postmark.json",
-  "demo:postmark:breaking": "npm run build && node dist/cli.js diff --base examples/schema-postmark.json --next examples/payload-postmark-breaking.json --show-nonbreaking"
+    "demo:twilio": "npm run build && node dist/cli.js diff --base examples/schema-twilio.json --next examples/payload-twilio.json",
+    "demo:twilio:breaking": "npm run build && node dist/cli.js diff --base examples/schema-twilio.json --next examples/payload-twilio-breaking.json --show-nonbreaking",
+    "demo:intercom": "npm run build && node dist/cli.js diff --base examples/schema-intercom.json --next examples/payload-intercom.json",
+    "demo:intercom:breaking": "npm run build && node dist/cli.js diff --base examples/schema-intercom.json --next examples/payload-intercom-breaking.json --show-nonbreaking",
+    "demo:discord": "npm run build && node dist/cli.js diff --base examples/schema-discord.json --next examples/payload-discord.json",
+    "demo:discord:breaking": "npm run build && node dist/cli.js diff --base examples/schema-discord.json --next examples/payload-discord-breaking.json --show-nonbreaking",
+    "demo:resend": "npm run build && node dist/cli.js diff --base examples/schema-resend.json --next examples/payload-resend.json",
+    "demo:resend:breaking": "npm run build && node dist/cli.js diff --base examples/schema-resend.json --next examples/payload-resend-breaking.json --show-nonbreaking",
+    "demo:postmark": "npm run build && node dist/cli.js diff --base examples/schema-postmark.json --next examples/payload-postmark.json",
+    "demo:postmark:breaking": "npm run build && node dist/cli.js diff --base examples/schema-postmark.json --next examples/payload-postmark-breaking.json --show-nonbreaking"
   },
-  "keywords": ["webhook", "contract-testing", "json-schema", "github-action", "ci", "schema-diff"],
+  "keywords": [
+    "webhook",
+    "contract-testing",
+    "json-schema",
+    "github-action",
+    "ci",
+    "schema-diff"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
@@ -58,9 +65,9 @@
     "to-json-schema": "^0.2.5"
   },
   "devDependencies": {
-    "@types/node": "^25.2.0",
+    "@types/node": "25.2.0",
     "esbuild": "^0.25.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "5.9.3"
   }
 }
