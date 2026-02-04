@@ -802,6 +802,35 @@ test("diff: array item type widening is breaking", () => {
   assert.match(r.breaking.typeChanged[0], /^\/arr\/\*/);
 });
 
+test("diff: tuple array item type widening is breaking and uses /[index] pointers", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      arr: {
+        type: "array",
+        items: [{ type: "string" }, { type: "number" }],
+      },
+    },
+    required: ["arr"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      arr: {
+        type: "array",
+        items: [{ type: "string" }, { type: ["number", "null"] }],
+      },
+    },
+    required: ["arr"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.equal(r.breaking.typeChanged.length, 1);
+  assert.match(r.breaking.typeChanged[0], /^\/arr\/\[1\]/);
+});
+
 test("diff: pointer escaping follows RFC6901-ish rules (~ and /)", () => {
   const base = normalizeToJsonSchema({
     type: "object",

@@ -425,6 +425,7 @@ function escapePointerToken(token) {
     return token.replace(/~/g, "~0").replace(/\//g, "~1");
 }
 const WCCI_ITEMS_TOKEN = "__wcci_items";
+const WCCI_TUPLE_ITEMS_TOKEN = "__wcci_tupleItems";
 const WCCI_ADDITIONAL_PROPERTIES_TOKEN = "__wcci_additionalProperties";
 export function indexSchema(schema) {
     const out = new Map();
@@ -473,11 +474,22 @@ export function indexSchema(schema) {
             }
         }
         if (looksLikeArray && node.items) {
-            // Use an internal token to represent the "element" schema.
-            // NOTE: We intentionally avoid the plain token "items" because it can collide with a real
-            // object property named "items" (and likewise for additionalProperties).
-            const childPtr = pointer === "/" ? `/${WCCI_ITEMS_TOKEN}` : `${pointer}/${WCCI_ITEMS_TOKEN}`;
-            walk(node.items, childPtr, required);
+            // JSON Schema supports two common shapes:
+            // - items: { ... }          (homogeneous array)
+            // - items: [{...}, {...}]   (tuple validation)
+            //
+            // We index both in a way that won't collide with a real object property named "items".
+            if (Array.isArray(node.items)) {
+                const basePtr = pointer === "/" ? `/${WCCI_TUPLE_ITEMS_TOKEN}` : `${pointer}/${WCCI_TUPLE_ITEMS_TOKEN}`;
+                for (let i = 0; i < node.items.length; i++) {
+                    const childPtr = `${basePtr}/${i}`;
+                    walk(node.items[i], childPtr, required);
+                }
+            }
+            else {
+                const childPtr = pointer === "/" ? `/${WCCI_ITEMS_TOKEN}` : `${pointer}/${WCCI_ITEMS_TOKEN}`;
+                walk(node.items, childPtr, required);
+            }
         }
     }
     walk(schema, "/", true);
@@ -486,9 +498,36 @@ export function indexSchema(schema) {
 export function summarizeDiff(baseSchema, nextSchema) {
     const baseIdx = indexSchema(baseSchema);
     const nextIdx = indexSchema(nextSchema);
-    const displayPointer = (ptr) => ptr
-        .replaceAll(`/${WCCI_ITEMS_TOKEN}`, "/*")
-        .replaceAll(`/${WCCI_ADDITIONAL_PROPERTIES_TOKEN}`, "/{additionalProperties}");
+    const displayPointer = (ptr) => {
+        if (ptr === "/")
+            return "/";
+        const tokens = ptr.split("/").slice(1);
+        const outTokens = [];
+        for (let i = 0; i < tokens.length; i++) {
+            const t = tokens[i];
+            if (t === WCCI_ITEMS_TOKEN) {
+                outTokens.push("*");
+                continue;
+            }
+            if (t === WCCI_ADDITIONAL_PROPERTIES_TOKEN) {
+                outTokens.push("{additionalProperties}");
+                continue;
+            }
+            if (t === WCCI_TUPLE_ITEMS_TOKEN) {
+                const next = tokens[i + 1];
+                if (next !== undefined && /^\d+$/.test(next)) {
+                    outTokens.push(`[${next}]`);
+                    i++; // consume index
+                    continue;
+                }
+                // Fallback for weird schemas: treat as wildcard tuple.
+                outTokens.push("[*]");
+                continue;
+            }
+            outTokens.push(t);
+        }
+        return "/" + outTokens.join("/");
+    };
     const added = [];
     const removedRequired = [];
     const removedOptional = [];
@@ -502,7 +541,18 @@ export function summarizeDiff(baseSchema, nextSchema) {
     };
     const isPropertyPointer = (p) => {
         const t = lastTokenOf(p);
-        return t !== WCCI_ITEMS_TOKEN && t !== WCCI_ADDITIONAL_PROPERTIES_TOKEN;
+        const parent = lastTokenOf(parentPtrOf(p));
+        // Synthetic nodes we add for schema-indexing.
+        if (t === WCCI_ITEMS_TOKEN)
+            return false;
+        if (t === WCCI_TUPLE_ITEMS_TOKEN)
+            return false;
+        if (t === WCCI_ADDITIONAL_PROPERTIES_TOKEN)
+            return false;
+        // Tuple item indices (e.g. /arr/__wcci_tupleItems/0) are not payload properties.
+        if (parent === WCCI_TUPLE_ITEMS_TOKEN)
+            return false;
+        return true;
     };
     const isAdditionalPropertiesSchemaPointer = (p) => lastTokenOf(p) === WCCI_ADDITIONAL_PROPERTIES_TOKEN;
     for (const [ptr, b] of baseIdx.entries()) {
