@@ -119,14 +119,20 @@ npm ci
 npm run demo:ok
 npm run demo:breaking
 npm run demo:breaking:json
-npm run demo:stripe
-npm run demo:slack
-npm run demo:github
-npm run demo:shopify
-npm run demo:twilio
 npm run demo:discord
-npm run demo:resend
+npm run demo:github
+npm run demo:gitlab
+npm run demo:intercom
 npm run demo:mailchimp
+npm run demo:netlify
+npm run demo:postmark
+npm run demo:resend
+npm run demo:sendgrid
+npm run demo:shopify
+npm run demo:slack
+npm run demo:stripe
+npm run demo:twilio
+npm run demo:vercel
 ```
 
 
