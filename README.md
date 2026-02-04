@@ -133,6 +133,7 @@ npm run demo:slack
 npm run demo:stripe
 npm run demo:twilio
 npm run demo:vercel
+npm run demo:paddle
 ```
 
 
