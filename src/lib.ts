@@ -449,6 +449,11 @@ export function summarizeDiff(baseSchema: any, nextSchema: any) {
   const baseIdx = indexSchema(baseSchema);
   const nextIdx = indexSchema(nextSchema);
 
+  const displayPointer = (ptr: string) =>
+    ptr
+      .replaceAll(`/${WCCI_ITEMS_TOKEN}`, "/*")
+      .replaceAll(`/${WCCI_ADDITIONAL_PROPERTIES_TOKEN}`, "/{additionalProperties}");
+
   const added: string[] = [];
   const removedRequired: string[] = [];
   const removedOptional: string[] = [];
@@ -459,21 +464,23 @@ export function summarizeDiff(baseSchema: any, nextSchema: any) {
   for (const [ptr, b] of baseIdx.entries()) {
     const n = nextIdx.get(ptr);
     if (!n) {
-      if (b.required) removedRequired.push(ptr);
-      else removedOptional.push(ptr);
+      if (b.required) removedRequired.push(displayPointer(ptr));
+      else removedOptional.push(displayPointer(ptr));
       continue;
     }
 
     if (b.required && !n.required) {
-      requiredBecameOptional.push(ptr);
+      requiredBecameOptional.push(displayPointer(ptr));
     }
 
     if (isBreakingTypeChange(b.type, n.type, b.required)) {
-      typeChanged.push(`${ptr} (${JSON.stringify(b.type)} -> ${JSON.stringify(n.type)})`);
+      typeChanged.push(
+        `${displayPointer(ptr)} (${JSON.stringify(b.type)} -> ${JSON.stringify(n.type)})`
+      );
     }
 
     const cs = isBreakingConstraintChanges(b, n);
-    for (const c of cs) constraintsChanged.push(`${ptr} (${c})`);
+    for (const c of cs) constraintsChanged.push(`${displayPointer(ptr)} (${c})`);
   }
 
   for (const [ptr] of nextIdx.entries()) {
@@ -491,8 +498,14 @@ export function summarizeDiff(baseSchema: any, nextSchema: any) {
       lastToken !== WCCI_ITEMS_TOKEN &&
       lastToken !== WCCI_ADDITIONAL_PROPERTIES_TOKEN;
 
-    if (isPropertyPointer && parentBase?.type === "object" && parentBase.additionalProperties === false) {
-      constraintsChanged.push(`${ptr} (added under closed object ${parentPtr})`);
+    if (
+      isPropertyPointer &&
+      parentBase?.type === "object" &&
+      parentBase.additionalProperties === false
+    ) {
+      constraintsChanged.push(
+        `${displayPointer(ptr)} (added under closed object ${displayPointer(parentPtr)})`
+      );
       continue;
     }
 
@@ -519,15 +532,15 @@ export function summarizeDiff(baseSchema: any, nextSchema: any) {
 
       if (baseAp && nextChild && isBreakingTypeChange(baseAp.type, nextChild.type, true)) {
         constraintsChanged.push(
-          `${ptr} (added key violates additionalProperties schema at ${parentPtr}: ${JSON.stringify(
-            baseAp.type
-          )} -> ${JSON.stringify(nextChild.type)})`
+          `${displayPointer(ptr)} (added key violates additionalProperties schema at ${displayPointer(
+            parentPtr
+          )}: ${JSON.stringify(baseAp.type)} -> ${JSON.stringify(nextChild.type)})`
         );
         continue;
       }
     }
 
-    added.push(ptr);
+    added.push(displayPointer(ptr));
   }
 
   // Determinism: always return lists in a stable order so CI output doesn't flap.

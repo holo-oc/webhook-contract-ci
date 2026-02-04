@@ -565,7 +565,7 @@ test("diff: array item type widening is breaking", () => {
   const r = summarizeDiff(base, next);
   assert.equal(r.breakingCount > 0, true);
   assert.equal(r.breaking.typeChanged.length, 1);
-  assert.match(r.breaking.typeChanged[0], /^\/arr\/__wcci_items/);
+  assert.match(r.breaking.typeChanged[0], /^\/arr\/\*/);
 });
 
 test("diff: pointer escaping follows RFC6901-ish rules (~ and /)", () => {
@@ -716,7 +716,7 @@ test("diff: widening additionalProperties subschema is breaking", () => {
   const r = summarizeDiff(base, next);
   assert.equal(r.breakingCount > 0, true);
   assert.equal(r.breaking.typeChanged.length, 1);
-  assert.match(r.breaking.typeChanged[0], /^\/__wcci_additionalProperties/);
+  assert.match(r.breaking.typeChanged[0], /^\/\{additionalProperties\}/);
 });
 
 test("diff: adding an additionalProperties subschema (tightening) is non-breaking", () => {
