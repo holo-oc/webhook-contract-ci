@@ -384,6 +384,30 @@ test("diff: missing inferred type for a required field is treated as breaking (c
   assert.match(breaking.typeChanged[0], /^\/id/);
 });
 
+test("diff: missing inferred type for an OPTIONAL field is non-breaking (avoid noisy inference gaps)", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      id: { type: "string" },
+      opt: { type: "string" },
+    },
+    required: ["id"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      id: { type: "string" },
+      opt: {},
+    },
+    required: ["id"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount, 0);
+  assert.deepEqual(r.breaking.typeChanged, []);
+});
+
 test("diff: added fields + removed optional fields are non-breaking", () => {
   const base = normalizeToJsonSchema(readJson("base.schema.json"));
 

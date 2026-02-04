@@ -76,7 +76,7 @@ function toTypeList(t) {
         return t;
     return undefined;
 }
-function isBreakingTypeChange(base, next) {
+function isBreakingTypeChange(base, next, baseRequired = true) {
     // Diff semantics are *consumer*-oriented: a webhook producer changes its payload, and we want to
     // flag changes that can cause existing consumers (validating/parsing against the base schema) to
     // reject or mis-handle the new payload.
@@ -95,7 +95,7 @@ function isBreakingTypeChange(base, next) {
     if (!base)
         return false;
     if (!next)
-        return true;
+        return baseRequired;
     const b = new Set(toTypeList(base));
     const n = new Set(toTypeList(next));
     const baseAllows = (t) => {
@@ -334,7 +334,7 @@ export function summarizeDiff(baseSchema, nextSchema) {
         if (b.required && !n.required) {
             requiredBecameOptional.push(ptr);
         }
-        if (isBreakingTypeChange(b.type, n.type)) {
+        if (isBreakingTypeChange(b.type, n.type, b.required)) {
             typeChanged.push(`${ptr} (${JSON.stringify(b.type)} -> ${JSON.stringify(n.type)})`);
         }
         const cs = isBreakingConstraintChanges(b, n);
@@ -374,7 +374,7 @@ export function summarizeDiff(baseSchema, nextSchema) {
             const apPtr = parentPtr === "/" ? `/${WCCI_ADDITIONAL_PROPERTIES_TOKEN}` : `${parentPtr}/${WCCI_ADDITIONAL_PROPERTIES_TOKEN}`;
             const baseAp = baseIdx.get(apPtr);
             const nextChild = nextIdx.get(ptr);
-            if (baseAp && nextChild && isBreakingTypeChange(baseAp.type, nextChild.type)) {
+            if (baseAp && nextChild && isBreakingTypeChange(baseAp.type, nextChild.type, true)) {
                 constraintsChanged.push(`${ptr} (added key violates additionalProperties schema at ${parentPtr}: ${JSON.stringify(baseAp.type)} -> ${JSON.stringify(nextChild.type)})`);
                 continue;
             }

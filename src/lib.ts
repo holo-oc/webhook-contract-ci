@@ -120,7 +120,11 @@ function toTypeList(t: any): TypeName[] | undefined {
   return undefined;
 }
 
-function isBreakingTypeChange(base?: TypeName | TypeName[], next?: TypeName | TypeName[]): boolean {
+function isBreakingTypeChange(
+  base?: TypeName | TypeName[],
+  next?: TypeName | TypeName[],
+  baseRequired: boolean = true
+): boolean {
   // Diff semantics are *consumer*-oriented: a webhook producer changes its payload, and we want to
   // flag changes that can cause existing consumers (validating/parsing against the base schema) to
   // reject or mis-handle the new payload.
@@ -137,7 +141,7 @@ function isBreakingTypeChange(base?: TypeName | TypeName[], next?: TypeName | Ty
   // - base=number, next=integer is *not* breaking (narrowing)
   // - base=integer, next=number *is* breaking (widening)
   if (!base) return false;
-  if (!next) return true;
+  if (!next) return baseRequired;
 
   const b = new Set(toTypeList(base));
   const n = new Set(toTypeList(next));
@@ -406,7 +410,7 @@ export function summarizeDiff(baseSchema: any, nextSchema: any) {
       requiredBecameOptional.push(ptr);
     }
 
-    if (isBreakingTypeChange(b.type, n.type)) {
+    if (isBreakingTypeChange(b.type, n.type, b.required)) {
       typeChanged.push(`${ptr} (${JSON.stringify(b.type)} -> ${JSON.stringify(n.type)})`);
     }
 
@@ -455,7 +459,7 @@ export function summarizeDiff(baseSchema: any, nextSchema: any) {
       const baseAp = baseIdx.get(apPtr);
       const nextChild = nextIdx.get(ptr);
 
-      if (baseAp && nextChild && isBreakingTypeChange(baseAp.type, nextChild.type)) {
+      if (baseAp && nextChild && isBreakingTypeChange(baseAp.type, nextChild.type, true)) {
         constraintsChanged.push(
           `${ptr} (added key violates additionalProperties schema at ${parentPtr}: ${JSON.stringify(
             baseAp.type
