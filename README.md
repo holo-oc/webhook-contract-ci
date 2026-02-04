@@ -44,6 +44,7 @@ It treats these as **breaking** (exit code `1`):
   - `enum` adds new values (including when a previously-enumerated field shows a new `const` value outside the baseline enum)
   - `maximum` increases / `minimum` decreases
   - `maxLength` increases / `minLength` decreases
+  - `pattern` changes (only when both schemas specify a `pattern`; missing inferred patterns are ignored)
   - `maxItems` increases / `minItems` decreases
   - `maxProperties` increases / `minProperties` decreases
   - an object goes from `additionalProperties: false` (closed) to allowing extra properties
