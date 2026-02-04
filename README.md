@@ -134,6 +134,9 @@ removed required paths:
 - `examples/demo-breaking-output.txt`
 - `examples/demo-breaking-output.json`.)
 
+Optional: there’s also a `vhs` tape you can use to generate a short GIF demo locally:
+- `examples/vhs/wcci.tape`
+
 ### Infer a baseline schema
 
 ```bash

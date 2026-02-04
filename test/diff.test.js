@@ -1417,3 +1417,62 @@ test("diff: indexes properties that live in allOf branches", () => {
   assert.equal(r2.breakingCount > 0, true);
   assert.equal(r2.breaking.constraintsChanged.some((x) => x.startsWith("/event/extra")), true);
 });
+
+test("diff: displayPointer decodes RFC6901 escapes for property names", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      "a/b": { type: "string" },
+      "a~b": { type: "string" },
+    },
+    required: ["a/b", "a~b"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      // omit both required fields
+    },
+    required: [],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  // displayPointer prints decoded property names: ~1 and ~0 are unescaped.
+  assert.deepEqual(r.breaking.removedRequired, ["/a/b", "/a~b"]);
+});
+
+test("diff: tuple array items are displayed as /[0], /[1] in pointers", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      arr: {
+        type: "array",
+        items: [
+          { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+          { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+        ],
+      },
+    },
+    required: ["arr"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      arr: {
+        type: "array",
+        items: [
+          { type: "object", properties: { id: { type: "number" } }, required: ["id"] },
+          { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+        ],
+      },
+    },
+    required: ["arr"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.equal(r.breaking.typeChanged.length, 1);
+  assert.match(r.breaking.typeChanged[0], /^\/arr\/\[0\]\/id/);
+});

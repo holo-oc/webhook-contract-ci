@@ -19,3 +19,25 @@ It’s intentionally not published anywhere — just a convenient local fixture 
 3) Open a PR that changes `samples/webhook.payload.json`.
 
 If the payload drift is breaking, the workflow should fail with a readable diff.
+
+## Local CLI demo
+
+From the *repo root* (this repo), you can demo breaking changes without GitHub Actions:
+
+```bash
+node dist/cli.js diff \
+  --base examples/example-repo/schemas/webhook.schema.json \
+  --next examples/example-repo/samples/webhook.payload.breaking.json \
+  --show-nonbreaking
+```
+
+## GIF demo (optional)
+
+If you have `vhs` installed, you can generate a short terminal GIF:
+
+```bash
+cd examples/example-repo
+npm ci
+vhs ../vhs/wcci.tape
+# -> examples/example-repo/wcci-demo.gif
+```
