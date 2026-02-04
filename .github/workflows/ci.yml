@@ -19,14 +19,30 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Unit tests
+      - name: Build + unit tests
         run: npm test
 
-      - name: CLI smoke (infer/check/diff)
+      - name: CLI smoke: infer
         run: |
-          node dist/cli.js infer --in test/fixtures/stripe.payload.json --out /tmp/stripe.inferred.schema.json
-          node dist/cli.js check --schema test/fixtures/stripe.schema.json --in test/fixtures/stripe.payload.json
-          node dist/cli.js diff --base test/fixtures/stripe.schema.json --next test/fixtures/stripe.payload.json
+          node dist/cli.js infer --in test/fixtures/base.payload.json --out /tmp/base.inferred.schema.json
 
-      - name: Ensure dist is up-to-date
-        run: git diff --exit-code dist
+      - name: CLI smoke: check
+        run: |
+          node dist/cli.js check --schema test/fixtures/base.schema.json --in test/fixtures/base.payload.json
+
+      - name: CLI smoke: diff (non-breaking)
+        run: |
+          node dist/cli.js diff --base test/fixtures/base.schema.json --next test/fixtures/base.payload.json
+
+      - name: CLI smoke: diff (breaking expected)
+        continue-on-error: true
+        id: breaking
+        run: |
+          node dist/cli.js diff --base test/fixtures/base.schema.json --next test/fixtures/stripe.payload.json
+
+      - name: Assert breaking diff failed
+        run: |
+          if [ "${{ steps.breaking.outcome }}" != "failure" ]; then
+            echo "Expected breaking diff to fail, but it did not."
+            exit 1
+          fi

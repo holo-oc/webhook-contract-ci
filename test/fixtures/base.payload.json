@@ -1,0 +1,7 @@
+{
+  "id": "evt_123",
+  "opt": "optional",
+  "nested": {
+    "a": 1
+  }
+}
