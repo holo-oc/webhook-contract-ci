@@ -41,7 +41,7 @@ It treats these as **breaking** (exit code `1`):
 - a path that was **required** becomes **optional**
 - a path’s **type changes** (e.g. `string -> number`)
 - a path’s constraints become **less restrictive** ("widening"), e.g.:
-  - `enum` adds new values
+  - `enum` adds new values (including when a previously-enumerated field shows a new `const` value outside the baseline enum)
   - `maximum` increases / `minimum` decreases
   - `maxLength` increases / `minLength` decreases
   - `maxItems` increases / `minItems` decreases

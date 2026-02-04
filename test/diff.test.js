@@ -137,6 +137,34 @@ test("diff: enum widening is breaking; enum narrowing is non-breaking", () => {
   assert.equal(r2.breakingCount, 0);
 });
 
+test("diff: base enum vs next const (inferred) is only breaking when the value is outside the enum", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: { status: { type: "string", enum: ["a", "b"] } },
+    required: ["status"],
+  });
+
+  const nextConstOk = normalizeToJsonSchema({
+    type: "object",
+    properties: { status: { type: "string", const: "a" } },
+    required: ["status"],
+  });
+
+  const r1 = summarizeDiff(base, nextConstOk);
+  assert.equal(r1.breakingCount, 0);
+
+  const nextConstBad = normalizeToJsonSchema({
+    type: "object",
+    properties: { status: { type: "string", const: "c" } },
+    required: ["status"],
+  });
+
+  const r2 = summarizeDiff(base, nextConstBad);
+  assert.equal(r2.breakingCount > 0, true);
+  assert.equal(r2.breaking.constraintsChanged.length, 1);
+  assert.match(r2.breaking.constraintsChanged[0], /^\/status/);
+});
+
 test("diff: enum object values compare deterministically (key order doesn't matter)", () => {
   const base = normalizeToJsonSchema({
     type: "object",

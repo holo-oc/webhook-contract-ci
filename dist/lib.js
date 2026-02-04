@@ -148,12 +148,14 @@ function isBreakingConstraintChanges(base, next) {
     // Return 0+ short reason strings if this node's constraints represent breaking changes.
     // Rule: widening (less restrictive) compared to base is breaking.
     const reasons = [];
-    // enum widening/removal
+    // enum widening
+    // Note: when `next` is inferred from a single payload sample, it will often use `const`
+    // rather than `enum`. Treat base.enum vs next.const as:
+    // - non-breaking if next.const is a member of base.enum
+    // - breaking if next.const is NOT a member of base.enum
+    // - otherwise (no next.enum + no next.const) ignore to avoid noisy false positives.
     if (Array.isArray(base.enum)) {
-        if (!Array.isArray(next.enum)) {
-            reasons.push(`enum removed`);
-        }
-        else {
+        if (Array.isArray(next.enum)) {
             const b = new Set(base.enum.map((x) => stableStringify(x)));
             for (const v of next.enum) {
                 if (!b.has(stableStringify(v))) {
@@ -162,12 +164,18 @@ function isBreakingConstraintChanges(base, next) {
                 }
             }
         }
+        else if (next.const !== undefined) {
+            const b = new Set(base.enum.map((x) => stableStringify(x)));
+            if (!b.has(stableStringify(next.const))) {
+                reasons.push(`enum widened`);
+            }
+        }
     }
-    // const removal/change
-    if (base.const !== undefined) {
-        if (next.const === undefined)
-            reasons.push(`const removed`);
-        else if (stableStringify(base.const) !== stableStringify(next.const))
+    // const change
+    // Avoid treating "next missing const" as breaking because inferred schemas can drop const
+    // for non-primitive nodes.
+    if (base.const !== undefined && next.const !== undefined) {
+        if (stableStringify(base.const) !== stableStringify(next.const))
             reasons.push(`const changed`);
     }
     // additionalProperties
@@ -211,7 +219,7 @@ function isBreakingConstraintChanges(base, next) {
             return;
         const n = next[key];
         if (typeof n !== "number") {
-            reasons.push(`${key} removed`);
+            // Next schema missing this constraint: ignore to avoid false positives when next is inferred.
             return;
         }
         if (kind === "max" && n > b)
@@ -230,7 +238,7 @@ function isBreakingConstraintChanges(base, next) {
             return;
         const n = next[key];
         if (typeof n !== "number") {
-            reasons.push(`${label} removed`);
+            // Next schema missing this constraint: ignore to avoid false positives when next is inferred.
             return;
         }
         if (kind === "max" && n > b)
