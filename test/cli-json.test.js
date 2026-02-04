@@ -137,3 +137,33 @@ test("cli: diff --json breakingPaths are deterministically sorted by pointer+kin
   const pointers = obj.breakingPaths.map((x) => x.pointer);
   assert.deepEqual(pointers, ["/a", "/c"]);
 });
+
+test("cli: diff supports --next-schema for schema-to-schema comparisons", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "wcci-test-"));
+
+  const baseFile = path.join(tmpDir, "base.schema.json");
+  const nextSchemaFile = path.join(tmpDir, "next.schema.json");
+
+  const baseSchema = {
+    type: "object",
+    properties: { id: { type: "string" } },
+    required: ["id"],
+  };
+
+  const nextSchema = {
+    type: "object",
+    properties: { id: { type: "number" } },
+    required: ["id"],
+  };
+
+  fs.writeFileSync(baseFile, JSON.stringify(baseSchema, null, 2));
+  fs.writeFileSync(nextSchemaFile, JSON.stringify(nextSchema, null, 2));
+
+  const r = run(["diff", "--base", baseFile, "--next-schema", nextSchemaFile, "--json"]);
+  assert.equal(r.status, 1);
+
+  const obj = JSON.parse(r.stdout);
+  assert.equal(obj.ok, false);
+  assert.equal(obj.breaking.typeChanged.length, 1);
+  assert.equal(obj.breakingPaths.some((x) => x.kind === "typeChanged" && x.pointer === "/id"), true);
+});

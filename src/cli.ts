@@ -20,7 +20,7 @@ type ExitCode = 0 | 1 | 2;
 function usage(code: ExitCode = 2): never {
   const out = code === 0 ? console.log : console.error;
   out(
-    `wcci - webhook contract CI\n\nUsage:\n  wcci infer --in <payload.json> --out <schema.json>\n  wcci check --schema <schema.json> --in <payload.json> [--json]\n  wcci diff --base <schema.json> --next <payload.json> [--show-nonbreaking] [--json]\n\nOptions:\n  -h, --help              Show help\n  --show-nonbreaking      Also print non-breaking adds/removals (diff mode)\n  --json                  Print machine-readable JSON output\n  --debug-schema-diff     Print json-schema-diff output (diff mode)\n\nExit codes:\n  0  success / no breaking changes\n  1  breaking changes (diff) or validation failure (check)\n  2  usage / input error\n`
+    `wcci - webhook contract CI\n\nUsage:\n  wcci infer --in <payload.json> --out <schema.json>\n  wcci check --schema <schema.json> --in <payload.json> [--json]\n  wcci diff --base <schema.json> (--next <payload.json> | --next-schema <schema.json>) [--show-nonbreaking] [--json]\n\nOptions:\n  -h, --help              Show help\n  --show-nonbreaking      Also print non-breaking adds/removals (diff mode)\n  --json                  Print machine-readable JSON output\n  --debug-schema-diff     Print json-schema-diff output (diff mode)\n\nExit codes:\n  0  success / no breaking changes\n  1  breaking changes (diff) or validation failure (check)\n  2  usage / input error\n`
   );
   process.exit(code);
 }
@@ -110,14 +110,20 @@ async function main() {
 
   if (cmd === "diff") {
     const baseFile = argValue("--base");
-    const nextFile = argValue("--next");
-    if (!baseFile || !nextFile) usage(2);
+    const nextPayloadFile = argValue("--next");
+    const nextSchemaFile = argValue("--next-schema");
+
+    if (!baseFile) usage(2);
+    if ((nextPayloadFile ? 1 : 0) + (nextSchemaFile ? 1 : 0) !== 1) usage(2);
 
     const baseSchema = normalizeToJsonSchema(readJson(baseFile));
 
-    // diff semantics: take a next *payload sample*, infer its schema, and compare.
-    const nextPayload = readJson(nextFile);
-    const nextSchema = inferSchemaFromPayload(nextPayload);
+    // diff semantics:
+    // - default: take a next *payload sample*, infer its schema, and compare.
+    // - optionally: compare against an explicit next schema.
+    const nextSchema = nextSchemaFile
+      ? normalizeToJsonSchema(readJson(nextSchemaFile))
+      : inferSchemaFromPayload(readJson(nextPayloadFile!));
 
     const { breaking, nonBreaking, breakingCount } = summarizeDiff(baseSchema, nextSchema);
 

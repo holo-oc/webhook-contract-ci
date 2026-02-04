@@ -24863,7 +24863,7 @@ function summarizeDiff(baseSchema, nextSchema) {
         outTokens.push("[*]");
         continue;
       }
-      outTokens.push(t);
+      outTokens.push(unescapePointerToken(t));
     }
     return "/" + outTokens.join("/");
   };
@@ -24984,7 +24984,7 @@ function usage(code = 2) {
 Usage:
   wcci infer --in <payload.json> --out <schema.json>
   wcci check --schema <schema.json> --in <payload.json> [--json]
-  wcci diff --base <schema.json> --next <payload.json> [--show-nonbreaking] [--json]
+  wcci diff --base <schema.json> (--next <payload.json> | --next-schema <schema.json>) [--show-nonbreaking] [--json]
 
 Options:
   -h, --help              Show help
@@ -25070,11 +25070,12 @@ async function main() {
   }
   if (cmd === "diff") {
     const baseFile = argValue("--base");
-    const nextFile = argValue("--next");
-    if (!baseFile || !nextFile) usage(2);
+    const nextPayloadFile = argValue("--next");
+    const nextSchemaFile = argValue("--next-schema");
+    if (!baseFile) usage(2);
+    if ((nextPayloadFile ? 1 : 0) + (nextSchemaFile ? 1 : 0) !== 1) usage(2);
     const baseSchema = normalizeToJsonSchema(readJson(baseFile));
-    const nextPayload = readJson(nextFile);
-    const nextSchema = inferSchemaFromPayload(nextPayload);
+    const nextSchema = nextSchemaFile ? normalizeToJsonSchema(readJson(nextSchemaFile)) : inferSchemaFromPayload(readJson(nextPayloadFile));
     const { breaking, nonBreaking, breakingCount } = summarizeDiff(baseSchema, nextSchema);
     if (argFlag("--debug-schema-diff")) {
       const res = await import_json_schema_diff.default.diffSchemas({
