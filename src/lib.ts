@@ -106,15 +106,25 @@ function isBreakingTypeChange(base?: TypeName | TypeName[], next?: TypeName | Ty
   //   (Consumers that accepted the broader base types will still accept the narrowed next type.)
   // - If next's type set introduces any NEW type not present in base ("widening"), it's breaking.
   //   (Consumers that assumed the base type(s) may fail when receiving the new type.)
+  //
+  // JSON Schema nuance: "integer" is a subset of "number".
+  // - base=number, next=integer is *not* breaking (narrowing)
+  // - base=integer, next=number *is* breaking (widening)
   if (!base) return false;
   if (!next) return true;
 
   const b = new Set(toTypeList(base));
   const n = new Set(toTypeList(next));
 
+  const baseAllows = (t: TypeName) => {
+    if (b.has(t)) return true;
+    if (t === "integer" && b.has("number")) return true;
+    return false;
+  };
+
   // If next has any type not previously allowed, it's breaking.
   for (const nt of n) {
-    if (!b.has(nt)) return true;
+    if (!baseAllows(nt)) return true;
   }
 
   return false;

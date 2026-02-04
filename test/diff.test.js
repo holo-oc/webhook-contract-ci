@@ -74,6 +74,31 @@ test("diff: type narrowing is non-breaking (e.g., [string, number] -> string)", 
   assert.deepEqual(breaking.typeChanged, []);
 });
 
+test("diff: integer is a subset of number (number -> integer is non-breaking; integer -> number is breaking)", () => {
+  const baseNumber = normalizeToJsonSchema({
+    type: "object",
+    properties: { amount: { type: "number" } },
+    required: ["amount"],
+  });
+
+  const nextInteger = normalizeToJsonSchema({
+    type: "object",
+    properties: { amount: { type: "integer" } },
+    required: ["amount"],
+  });
+
+  const r1 = summarizeDiff(baseNumber, nextInteger);
+  assert.equal(r1.breakingCount, 0);
+
+  const baseInteger = nextInteger;
+  const nextNumber = baseNumber;
+
+  const r2 = summarizeDiff(baseInteger, nextNumber);
+  assert.equal(r2.breakingCount > 0, true);
+  assert.equal(r2.breaking.typeChanged.length, 1);
+  assert.match(r2.breaking.typeChanged[0], /^\/amount/);
+});
+
 test("diff: type change with no overlap is breaking (e.g., string -> number)", () => {
   const base = normalizeToJsonSchema(readJson("base.schema.json"));
   const next = normalizeToJsonSchema(readJson("next.type-change.schema.json"));
