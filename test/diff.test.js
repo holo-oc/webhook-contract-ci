@@ -451,6 +451,54 @@ test("diff: loosening numeric/string bounds is breaking", () => {
   assert.deepEqual(r.breaking.constraintsChanged.map((x) => x.split(" ", 1)[0]), ["/amount", "/id"]);
 });
 
+test("diff: multipleOf changes are breaking unless tightened", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      v: { type: "number", multipleOf: 10 },
+    },
+    required: ["v"],
+  });
+
+  // Tighten: only multiples of 20 (subset of multiples of 10) => non-breaking
+  const nextTight = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      v: { type: "number", multipleOf: 20 },
+    },
+    required: ["v"],
+  });
+
+  const r1 = summarizeDiff(base, nextTight);
+  assert.equal(r1.breakingCount, 0);
+
+  // Loosen: multiples of 5 (superset) => breaking
+  const nextLoose = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      v: { type: "number", multipleOf: 5 },
+    },
+    required: ["v"],
+  });
+
+  const r2 = summarizeDiff(base, nextLoose);
+  assert.equal(r2.breakingCount > 0, true);
+  assert.equal(r2.breaking.constraintsChanged.some((x) => x.startsWith("/v ")), true);
+
+  // Change to non-divisible value: potential widening => breaking
+  const nextWeird = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      v: { type: "number", multipleOf: 6 },
+    },
+    required: ["v"],
+  });
+
+  const r3 = summarizeDiff(base, nextWeird);
+  assert.equal(r3.breakingCount > 0, true);
+  assert.equal(r3.breaking.constraintsChanged.some((x) => x.startsWith("/v ")), true);
+});
+
 test("diff: loosening array bounds is breaking", () => {
   const base = normalizeToJsonSchema({
     type: "object",

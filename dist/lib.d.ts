@@ -11,6 +11,7 @@ export type NodeInfo = {
     exclusiveMinimum?: number;
     maximum?: number;
     exclusiveMaximum?: number;
+    multipleOf?: number;
     minLength?: number;
     maxLength?: number;
     minItems?: number;

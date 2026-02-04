@@ -30,6 +30,8 @@ export type NodeInfo = {
   maximum?: number;
   exclusiveMaximum?: number;
 
+  multipleOf?: number;
+
   minLength?: number;
   maxLength?: number;
 
@@ -410,6 +412,20 @@ function isBreakingConstraintChanges(base: NodeInfo, next: NodeInfo): string[] {
   cmpNum("minimum", "min");
   cmpNum("exclusiveMinimum", "min");
 
+  // multipleOf
+  // Tightening (next multipleOf is a multiple of base) is non-breaking.
+  // Any other change can allow values consumers reject => breaking.
+  if (typeof base.multipleOf === "number" && typeof next.multipleOf === "number") {
+    const b = base.multipleOf;
+    const n = next.multipleOf;
+    if (n !== b) {
+      // next is a tightening only if every number that is a multiple of `n` is also a multiple of `b`
+      // i.e., n is a multiple of b.
+      const tightening = Number.isFinite(b) && Number.isFinite(n) && n > 0 && b > 0 && n % b === 0;
+      if (!tightening) reasons.push(`multipleOf changed (${b} -> ${n})`);
+    }
+  }
+
   const cmp = (key: keyof NodeInfo, label: string, kind: "min" | "max") => {
     const b = (base as any)[key];
     if (typeof b !== "number") return;
@@ -463,6 +479,8 @@ export function indexSchema(schema: any): Map<string, NodeInfo> {
       exclusiveMinimum: typeof node.exclusiveMinimum === "number" ? node.exclusiveMinimum : undefined,
       maximum: typeof node.maximum === "number" ? node.maximum : undefined,
       exclusiveMaximum: typeof node.exclusiveMaximum === "number" ? node.exclusiveMaximum : undefined,
+
+      multipleOf: typeof node.multipleOf === "number" ? node.multipleOf : undefined,
 
       minLength: typeof node.minLength === "number" ? node.minLength : undefined,
       maxLength: typeof node.maxLength === "number" ? node.maxLength : undefined,
