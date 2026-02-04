@@ -124,8 +124,62 @@ function extractTypeFromSchemaNode(node) {
             return u[0];
         return u;
     }
-    // allOf: intersection; we can't compute it safely without full evaluation.
-    // For diff semantics, we avoid inventing a type here.
+    // allOf: intersection.
+    // We avoid full semantic evaluation, but we *can* extract a safe type signal when every branch
+    // provides type information.
+    if (Array.isArray(node.allOf)) {
+        const branchesAllOf = node.allOf;
+        const typeSets = [];
+        for (const b of branchesAllOf) {
+            const t = extractTypeFromSchemaNode(b);
+            const list = toTypeList(t);
+            // It's common to use allOf to attach constraints (minLength, patterns, etc.) without repeating
+            // `type`. If a branch doesn't provide type info, ignore it for type extraction.
+            if (!list)
+                continue;
+            const s = new Set(list);
+            // In unions, "integer" is a subset of "number"; treat ["number","integer"] as just "number".
+            if (s.has("number"))
+                s.delete("integer");
+            typeSets.push(s);
+        }
+        if (typeSets.length === 0)
+            return undefined;
+        const intersectTwo = (a, b) => {
+            const out = new Set();
+            // Handle number/integer specially (integer ⊂ number)
+            const aHasNum = a.has("number");
+            const bHasNum = b.has("number");
+            const aHasInt = a.has("integer");
+            const bHasInt = b.has("integer");
+            // Intersection(number, integer) => integer
+            if ((aHasInt && (bHasInt || bHasNum)) || (bHasInt && (aHasInt || aHasNum))) {
+                out.add("integer");
+            }
+            // Intersection(number, number) => number (but not if either side forces integer only)
+            if (aHasNum && bHasNum) {
+                out.add("number");
+            }
+            for (const t of ["null", "boolean", "string", "array", "object"]) {
+                if (a.has(t) && b.has(t))
+                    out.add(t);
+            }
+            // If integer is present, number is redundant for our purposes.
+            if (out.has("integer"))
+                out.delete("number");
+            return out;
+        };
+        let acc = typeSets[0] ?? new Set();
+        for (let i = 1; i < typeSets.length; i++) {
+            acc = intersectTwo(acc, typeSets[i]);
+        }
+        const u = Array.from(acc);
+        if (u.length === 0)
+            return undefined;
+        if (u.length === 1)
+            return u[0];
+        return u;
+    }
     return undefined;
 }
 function isBreakingTypeChange(base, next, baseRequired = true) {

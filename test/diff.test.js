@@ -94,6 +94,46 @@ test("diff: type extraction handles anyOf/oneOf unions", () => {
   assert.match(r2.breaking.typeChanged[0], /^\/id/);
 });
 
+test("diff: type extraction handles allOf intersections (basic)", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      id: {
+        allOf: [{ type: "string" }, { minLength: 1 }],
+      },
+      amount: {
+        allOf: [{ type: "number" }, { type: "integer" }],
+      },
+    },
+    required: ["id", "amount"],
+  });
+
+  const nextOk = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      id: { type: "string" },
+      amount: { type: "integer" },
+    },
+    required: ["id", "amount"],
+  });
+
+  const r1 = summarizeDiff(base, nextOk);
+  assert.equal(r1.breakingCount, 0);
+
+  const nextBreak = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      id: { type: ["string", "null"] },
+      amount: { type: "integer" },
+    },
+    required: ["id", "amount"],
+  });
+
+  const r2 = summarizeDiff(base, nextBreak);
+  assert.equal(r2.breakingCount > 0, true);
+  assert.equal(r2.breaking.typeChanged.some((x) => x.startsWith("/id")), true);
+});
+
 test("diff: type extraction handles OpenAPI nullable: true", () => {
   const base = normalizeToJsonSchema({
     type: "object",
