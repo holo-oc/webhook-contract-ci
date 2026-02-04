@@ -332,25 +332,50 @@ function isBreakingConstraintChanges(base, next) {
             // `undefined` means "unspecified" (common for inferred schemas) — don't treat as breaking.
         }
     }
-    const cmpNum = (key, kind) => {
-        const b = base[key];
-        if (typeof b !== "number")
-            return;
-        const n = next[key];
-        if (typeof n !== "number") {
-            // Next schema missing this constraint: ignore to avoid false positives when next is inferred.
-            return;
-        }
-        if (kind === "max" && n > b)
-            reasons.push(`${key} loosened (${b} -> ${n})`);
-        if (kind === "min" && n < b)
-            reasons.push(`${key} loosened (${b} -> ${n})`);
+    const readLower = (x) => {
+        // We only support the numeric forms.
+        if (typeof x.exclusiveMinimum === "number")
+            return { value: x.exclusiveMinimum, exclusive: true };
+        if (typeof x.minimum === "number")
+            return { value: x.minimum, exclusive: false };
+        return undefined;
     };
-    // Numeric bounds
-    cmpNum("maximum", "max");
-    cmpNum("exclusiveMaximum", "max");
-    cmpNum("minimum", "min");
-    cmpNum("exclusiveMinimum", "min");
+    const readUpper = (x) => {
+        if (typeof x.exclusiveMaximum === "number")
+            return { value: x.exclusiveMaximum, exclusive: true };
+        if (typeof x.maximum === "number")
+            return { value: x.maximum, exclusive: false };
+        return undefined;
+    };
+    const boundIsLooser = (baseB, nextB, kind) => {
+        if (kind === "lower") {
+            // Lower bound is looser if it allows smaller numbers, or if it flips exclusive -> inclusive.
+            if (nextB.value < baseB.value)
+                return true;
+            if (nextB.value > baseB.value)
+                return false;
+            return baseB.exclusive && !nextB.exclusive;
+        }
+        // Upper bound is looser if it allows larger numbers, or if it flips exclusive -> inclusive.
+        if (nextB.value > baseB.value)
+            return true;
+        if (nextB.value < baseB.value)
+            return false;
+        return baseB.exclusive && !nextB.exclusive;
+    };
+    // Numeric bounds (compare effective interval endpoints across min/exclusiveMin and max/exclusiveMax).
+    // NOTE: If next is missing bound info entirely, we ignore it to avoid noisy false positives when
+    // next is inferred from a sample payload.
+    const bLower = readLower(base);
+    const nLower = readLower(next);
+    if (bLower && nLower && boundIsLooser(bLower, nLower, "lower")) {
+        reasons.push(`minimum loosened (${bLower.exclusive ? ">" : ">="}${bLower.value} -> ${nLower.exclusive ? ">" : ">="}${nLower.value})`);
+    }
+    const bUpper = readUpper(base);
+    const nUpper = readUpper(next);
+    if (bUpper && nUpper && boundIsLooser(bUpper, nUpper, "upper")) {
+        reasons.push(`maximum loosened (${bUpper.exclusive ? "<" : "<="}${bUpper.value} -> ${nUpper.exclusive ? "<" : "<="}${nUpper.value})`);
+    }
     // multipleOf
     // Tightening (next multipleOf is a multiple of base) is non-breaking.
     // Any other change can allow values consumers reject => breaking.

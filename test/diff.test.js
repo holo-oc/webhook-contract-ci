@@ -451,6 +451,54 @@ test("diff: loosening numeric/string bounds is breaking", () => {
   assert.deepEqual(r.breaking.constraintsChanged.map((x) => x.split(" ", 1)[0]), ["/amount", "/id"]);
 });
 
+test("diff: exclusive numeric bound changes are compared across maximum/exclusiveMaximum", () => {
+  const baseExclusive = normalizeToJsonSchema({
+    type: "object",
+    properties: { amount: { type: "number", exclusiveMaximum: 10 } },
+    required: ["amount"],
+  });
+
+  const nextInclusiveSameValue = normalizeToJsonSchema({
+    type: "object",
+    properties: { amount: { type: "number", maximum: 10 } },
+    required: ["amount"],
+  });
+
+  const r1 = summarizeDiff(baseExclusive, nextInclusiveSameValue);
+  assert.equal(r1.breakingCount > 0, true);
+  assert.equal(r1.breaking.constraintsChanged.some((x) => x.startsWith("/amount ")), true);
+
+  const baseInclusive = nextInclusiveSameValue;
+  const nextExclusiveSameValue = baseExclusive;
+
+  const r2 = summarizeDiff(baseInclusive, nextExclusiveSameValue);
+  assert.equal(r2.breakingCount, 0);
+});
+
+test("diff: exclusive numeric bound changes are compared across minimum/exclusiveMinimum", () => {
+  const baseExclusive = normalizeToJsonSchema({
+    type: "object",
+    properties: { amount: { type: "number", exclusiveMinimum: 5 } },
+    required: ["amount"],
+  });
+
+  const nextInclusiveSameValue = normalizeToJsonSchema({
+    type: "object",
+    properties: { amount: { type: "number", minimum: 5 } },
+    required: ["amount"],
+  });
+
+  const r1 = summarizeDiff(baseExclusive, nextInclusiveSameValue);
+  assert.equal(r1.breakingCount > 0, true);
+  assert.equal(r1.breaking.constraintsChanged.some((x) => x.startsWith("/amount ")), true);
+
+  const baseInclusive = nextInclusiveSameValue;
+  const nextExclusiveSameValue = baseExclusive;
+
+  const r2 = summarizeDiff(baseInclusive, nextExclusiveSameValue);
+  assert.equal(r2.breakingCount, 0);
+});
+
 test("diff: multipleOf changes are breaking unless tightened", () => {
   const base = normalizeToJsonSchema({
     type: "object",
