@@ -1279,6 +1279,85 @@ test("diff: resolves local $ref (#/...) when indexing schemas", () => {
   assert.match(r.breaking.typeChanged[0], /^\/foo\/id/);
 });
 
+test("diff: resolves local $ref under OpenAPI components/schemas", () => {
+  const base = normalizeToJsonSchema({
+    components: {
+      schemas: {
+        Foo: {
+          type: "object",
+          properties: { id: { type: "string" } },
+          required: ["id"],
+        },
+      },
+    },
+    type: "object",
+    properties: {
+      foo: { $ref: "#/components/schemas/Foo" },
+    },
+    required: ["foo"],
+  });
+
+  const next = normalizeToJsonSchema({
+    components: {
+      schemas: {
+        Foo: {
+          type: "object",
+          properties: { id: { type: "number" } },
+          required: ["id"],
+        },
+      },
+    },
+    type: "object",
+    properties: {
+      foo: { $ref: "#/components/schemas/Foo" },
+    },
+    required: ["foo"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.equal(r.breaking.typeChanged.length, 1);
+  assert.match(r.breaking.typeChanged[0], /^\/foo\/id/);
+});
+
+test("diff: resolves $ref pointers with RFC6901 escapes (~1 and ~0)", () => {
+  // Definition name is literally "a/b" (encoded as a~1b).
+  const base = normalizeToJsonSchema({
+    definitions: {
+      "a/b": {
+        type: "object",
+        properties: { id: { type: "string" } },
+        required: ["id"],
+      },
+    },
+    type: "object",
+    properties: {
+      foo: { $ref: "#/definitions/a~1b" },
+    },
+    required: ["foo"],
+  });
+
+  const next = normalizeToJsonSchema({
+    definitions: {
+      "a/b": {
+        type: "object",
+        properties: { id: { type: "number" } },
+        required: ["id"],
+      },
+    },
+    type: "object",
+    properties: {
+      foo: { $ref: "#/definitions/a~1b" },
+    },
+    required: ["foo"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.equal(r.breaking.typeChanged.length, 1);
+  assert.match(r.breaking.typeChanged[0], /^\/foo\/id/);
+});
+
 test("diff: indexes properties that live in allOf branches", () => {
   const base = normalizeToJsonSchema({
     type: "object",
