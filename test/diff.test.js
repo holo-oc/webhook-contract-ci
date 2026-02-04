@@ -266,6 +266,34 @@ test("diff: base enum vs next const (inferred) is only breaking when the value i
   assert.match(r2.breaking.constraintsChanged[0], /^\/status/);
 });
 
+test("diff: base const vs next enum is only non-breaking when enum contains ONLY the const", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: { status: { type: "string", const: "a" } },
+    required: ["status"],
+  });
+
+  const nextSame = normalizeToJsonSchema({
+    type: "object",
+    properties: { status: { type: "string", enum: ["a"] } },
+    required: ["status"],
+  });
+
+  const r1 = summarizeDiff(base, nextSame);
+  assert.equal(r1.breakingCount, 0);
+
+  const nextWiden = normalizeToJsonSchema({
+    type: "object",
+    properties: { status: { type: "string", enum: ["a", "b"] } },
+    required: ["status"],
+  });
+
+  const r2 = summarizeDiff(base, nextWiden);
+  assert.equal(r2.breakingCount > 0, true);
+  assert.equal(r2.breaking.constraintsChanged.length, 1);
+  assert.match(r2.breaking.constraintsChanged[0], /^\/status/);
+});
+
 test("diff: enum object values compare deterministically (key order doesn't matter)", () => {
   const base = normalizeToJsonSchema({
     type: "object",

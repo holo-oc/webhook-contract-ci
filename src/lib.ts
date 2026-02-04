@@ -331,11 +331,20 @@ function isBreakingConstraintChanges(base: NodeInfo, next: NodeInfo): string[] {
     }
   }
 
-  // const change
+  // const change / const-vs-enum widening
   // Avoid treating "next missing const" as breaking because inferred schemas can drop const
   // for non-primitive nodes.
-  if (base.const !== undefined && next.const !== undefined) {
-    if (stableStringify(base.const) !== stableStringify(next.const)) reasons.push(`const changed`);
+  if (base.const !== undefined) {
+    if (next.const !== undefined) {
+      if (stableStringify(base.const) !== stableStringify(next.const)) reasons.push(`const changed`);
+    } else if (Array.isArray(next.enum)) {
+      // base.const means the producer always emitted a single value. If next allows more than that
+      // single value, the producer may start emitting values consumers can't accept.
+      const b = stableStringify(base.const);
+      const widened = next.enum.some((v) => stableStringify(v) !== b);
+      if (widened) reasons.push(`const widened`);
+      // If next.enum is exactly [base.const], it's effectively the same constraint.
+    }
   }
 
   // additionalProperties
