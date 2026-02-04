@@ -56,6 +56,67 @@ test("diff: type widening is breaking (e.g., string -> [string, null])", () => {
   assert.match(breaking.typeChanged[0], /^\/id/);
 });
 
+test("diff: type extraction handles anyOf/oneOf unions", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      id: {
+        anyOf: [{ type: "string" }, { type: "number" }],
+      },
+    },
+    required: ["id"],
+  });
+
+  // Narrow to one of the base types (non-breaking).
+  const nextNarrow = normalizeToJsonSchema({
+    type: "object",
+    properties: { id: { type: "string" } },
+    required: ["id"],
+  });
+
+  const r1 = summarizeDiff(base, nextNarrow);
+  assert.equal(r1.breakingCount, 0);
+
+  // Widen beyond the base union (breaking).
+  const nextWiden = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      id: {
+        oneOf: [{ type: "string" }, { type: "number" }, { type: "null" }],
+      },
+    },
+    required: ["id"],
+  });
+
+  const r2 = summarizeDiff(base, nextWiden);
+  assert.equal(r2.breakingCount > 0, true);
+  assert.equal(r2.breaking.typeChanged.length, 1);
+  assert.match(r2.breaking.typeChanged[0], /^\/id/);
+});
+
+test("diff: type extraction handles OpenAPI nullable: true", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      id: { type: "string" },
+    },
+    required: ["id"],
+  });
+
+  const nextNullable = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      id: { type: "string", nullable: true },
+    },
+    required: ["id"],
+  });
+
+  const r = summarizeDiff(base, nextNullable);
+  assert.equal(r.breakingCount > 0, true);
+  assert.equal(r.breaking.typeChanged.length, 1);
+  assert.match(r.breaking.typeChanged[0], /^\/id/);
+});
+
 test("diff: type narrowing is non-breaking (e.g., [string, number] -> string)", () => {
   const base = normalizeToJsonSchema({
     type: "object",

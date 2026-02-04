@@ -120,6 +120,58 @@ function toTypeList(t: any): TypeName[] | undefined {
   return undefined;
 }
 
+function uniqTypes(types: (TypeName | undefined)[]): TypeName[] {
+  const out: TypeName[] = [];
+  const seen = new Set<string>();
+  for (const t of types) {
+    if (!t) continue;
+    if (seen.has(t)) continue;
+    seen.add(t);
+    out.push(t);
+  }
+  return out;
+}
+
+function extractTypeFromSchemaNode(node: any): TypeName | TypeName[] | undefined {
+  if (!node || typeof node !== "object") return undefined;
+
+  // Standard JSON Schema
+  if (node.type) {
+    // OpenAPI-style nullable: true
+    if (node.nullable === true) {
+      const ts = toTypeList(node.type) ?? [];
+      if (!ts.includes("null")) return [...ts, "null"];
+    }
+    return node.type as any;
+  }
+
+  // OpenAPI nullable without explicit type is too ambiguous.
+
+  // anyOf/oneOf: union the member types (best-effort)
+  const branches = Array.isArray(node.anyOf)
+    ? node.anyOf
+    : Array.isArray(node.oneOf)
+      ? node.oneOf
+      : undefined;
+
+  if (branches) {
+    const collected: TypeName[] = [];
+    for (const b of branches) {
+      const t = extractTypeFromSchemaNode(b);
+      const list = toTypeList(t);
+      if (list) collected.push(...list);
+    }
+    const u = uniqTypes(collected);
+    if (u.length === 0) return undefined;
+    if (u.length === 1) return u[0];
+    return u;
+  }
+
+  // allOf: intersection; we can't compute it safely without full evaluation.
+  // For diff semantics, we avoid inventing a type here.
+  return undefined;
+}
+
 function isBreakingTypeChange(
   base?: TypeName | TypeName[],
   next?: TypeName | TypeName[],
@@ -328,14 +380,16 @@ export function indexSchema(schema: any): Map<string, NodeInfo> {
 
     const info: NodeInfo = {
       pointer,
-      type: node.type,
+      type: extractTypeFromSchemaNode(node),
       required,
 
       enum: Array.isArray(node.enum) ? node.enum : undefined,
       const: node.const,
 
       additionalProperties:
-        node.type === "object" ? (node.additionalProperties as any) : undefined,
+        node.type === "object" || (node.properties && typeof node.properties === "object")
+          ? (node.additionalProperties as any)
+          : undefined,
 
       minimum: typeof node.minimum === "number" ? node.minimum : undefined,
       exclusiveMinimum: typeof node.exclusiveMinimum === "number" ? node.exclusiveMinimum : undefined,
@@ -355,7 +409,11 @@ export function indexSchema(schema: any): Map<string, NodeInfo> {
     // Store even intermediate nodes so we can detect type changes at objects/arrays too.
     out.set(pointer, info);
 
-    if (node.type === "object") {
+    const looksLikeObject =
+      node.type === "object" || (node.properties && typeof node.properties === "object");
+    const looksLikeArray = node.type === "array" || node.items !== undefined;
+
+    if (looksLikeObject) {
       if (node.properties && typeof node.properties === "object") {
         const req = new Set<string>(Array.isArray(node.required) ? node.required : []);
         for (const [k, v] of Object.entries<any>(node.properties)) {
@@ -374,7 +432,7 @@ export function indexSchema(schema: any): Map<string, NodeInfo> {
       }
     }
 
-    if (node.type === "array" && node.items) {
+    if (looksLikeArray && node.items) {
       // Use an internal token to represent the "element" schema.
       // NOTE: We intentionally avoid the plain token "items" because it can collide with a real
       // object property named "items" (and likewise for additionalProperties).
