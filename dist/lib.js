@@ -149,6 +149,15 @@ export function summarizeDiff(baseSchema, nextSchema) {
         if (!baseIdx.has(ptr))
             added.push(ptr);
     }
+    // Determinism: always return lists in a stable order so CI output doesn't flap.
+    // We sort by pointer, and for typeChanged we sort by the pointer prefix.
+    const byPointer = (a, b) => a.localeCompare(b);
+    const typeChangedByPointer = (a, b) => a.split(" ", 1)[0].localeCompare(b.split(" ", 1)[0]);
+    added.sort(byPointer);
+    removedRequired.sort(byPointer);
+    removedOptional.sort(byPointer);
+    requiredBecameOptional.sort(byPointer);
+    typeChanged.sort(typeChangedByPointer);
     const breaking = {
         removedRequired,
         requiredBecameOptional,

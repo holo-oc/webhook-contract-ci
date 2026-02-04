@@ -73,3 +73,25 @@ test("diff: added fields + removed optional fields are non-breaking", () => {
   // Optional removal should be tracked as non-breaking.
   assert.deepEqual(nonBreaking.removedOptional, ["/opt"]);
 });
+
+test("diff: output lists are deterministically sorted by pointer", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {},
+    required: [],
+  });
+
+  // Intentionally insert properties in reverse order.
+  const next = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      zzz: { type: "string" },
+      aaa: { type: "string" },
+    },
+    required: ["zzz", "aaa"],
+  });
+
+  const { breakingCount, nonBreaking } = summarizeDiff(base, next);
+  assert.equal(breakingCount, 0);
+  assert.deepEqual(nonBreaking.added, ["/aaa", "/zzz"]);
+});
