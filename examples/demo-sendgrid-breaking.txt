@@ -1,0 +1,10 @@
+
+> webhook-contract-ci@1.0.0 demo:sendgrid:breaking
+> npm run build && node dist/cli.js diff --base examples/schema-sendgrid.json --next examples/payload-sendgrid-breaking.json --show-nonbreaking
+
+
+> webhook-contract-ci@1.0.0 build
+> tsc -p tsconfig.json
+
+added paths:
+- /*/new_required_field

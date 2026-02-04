@@ -1,0 +1,9 @@
+[
+  {
+    "email": "user@example.com",
+    "timestamp": "2026-02-05T05:46:00Z",
+    "event": "delivered",
+    "sg_event_id": null,
+    "new_required_field": "breaking"
+  }
+]

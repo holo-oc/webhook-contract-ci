@@ -1,0 +1,10 @@
+[
+  {
+    "email": "user@example.com",
+    "timestamp": 1412074856,
+    "smtp-id": "&lt;4FB4C14E-1A06-4602-97B6-417EA74EBD3A@mx.example.com&gt;",
+    "event": "delivered",
+    "sg_event_id": "dQw4w9WgXcQ",
+    "sg_message_id": "u56hwefuywef.filter0002p2las1-1789-7C3D2C89-2.0"
+  }
+]

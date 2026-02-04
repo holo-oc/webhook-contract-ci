@@ -1,0 +1,9 @@
+
+> webhook-contract-ci@1.0.0 demo:sendgrid
+> npm run build && node dist/cli.js diff --base examples/schema-sendgrid.json --next examples/payload-sendgrid.json
+
+
+> webhook-contract-ci@1.0.0 build
+> tsc -p tsconfig.json
+
+no breaking changes detected

@@ -1,0 +1,45 @@
+
+> webhook-contract-ci@1.0.0 demo:sendgrid:breaking
+> npm run build && node dist/cli.js diff --base examples/schema-sendgrid.json --next examples/payload-sendgrid-breaking.json --show-nonbreaking --json
+
+
+> webhook-contract-ci@1.0.0 build
+> tsc -p tsconfig.json
+
+{
+  "ok": false,
+  "breakingCount": 2,
+  "breaking": {
+    "removedRequired": [],
+    "requiredBecameOptional": [],
+    "typeChanged": [
+      "/*/sg_event_id (\"string\" -> \"null\")",
+      "/*/timestamp (\"integer\" -> \"string\")"
+    ],
+    "constraintsChanged": []
+  },
+  "nonBreaking": {
+    "added": [
+      "/*/new_required_field"
+    ],
+    "removedOptional": []
+  },
+  "breakingPaths": [
+    {
+      "kind": "typeChanged",
+      "pointer": "/*/sg_event_id",
+      "detail": "\"string\" -> \"null\""
+    },
+    {
+      "kind": "typeChanged",
+      "pointer": "/*/timestamp",
+      "detail": "\"integer\" -> \"string\""
+    }
+  ],
+  "nonBreakingPaths": [
+    {
+      "kind": "added",
+      "pointer": "/*/new_required_field"
+    }
+  ]
+}
