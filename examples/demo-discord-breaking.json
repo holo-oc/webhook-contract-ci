@@ -1,0 +1,30 @@
+{
+  "ok": false,
+  "breakingCount": 2,
+  "breaking": {
+    "removedRequired": [],
+    "requiredBecameOptional": [],
+    "typeChanged": [
+      "/embeds/*/color (\"integer\" -> \"string\")",
+      "/tts (\"boolean\" -> \"string\")"
+    ],
+    "constraintsChanged": []
+  },
+  "nonBreaking": {
+    "added": [],
+    "removedOptional": []
+  },
+  "breakingPaths": [
+    {
+      "kind": "typeChanged",
+      "pointer": "/embeds/*/color",
+      "detail": "\"integer\" -> \"string\""
+    },
+    {
+      "kind": "typeChanged",
+      "pointer": "/tts",
+      "detail": "\"boolean\" -> \"string\""
+    }
+  ],
+  "nonBreakingPaths": []
+}

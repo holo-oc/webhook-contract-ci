@@ -1,0 +1,4 @@
+breaking webhook payload changes detected:
+type changed:
+- /embeds/*/color ("integer" -> "string")
+- /tts ("boolean" -> "string")

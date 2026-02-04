@@ -1,0 +1,19 @@
+{
+  "content": "Sample Discord webhook message",
+  "username": "wcci-demo",
+  "tts": "false",
+  "embeds": [
+    {
+      "title": "Example Embed",
+      "description": "This is a test embed from Webhook Contract CI demo.",
+      "color": "5814783",
+      "fields": [
+        {
+          "name": "Field 1",
+          "value": "value1",
+          "inline": true
+        }
+      ]
+    }
+  ]
+}
