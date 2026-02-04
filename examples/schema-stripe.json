@@ -1,0 +1,151 @@
+{
+  "type": "object",
+  "properties": {
+    "api_version": {
+      "type": "string",
+      "format": "date"
+    },
+    "created": {
+      "type": "integer"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "object": {
+          "type": "object",
+          "properties": {
+            "address_city": {
+              "type": "null"
+            },
+            "address_country": {
+              "type": "null"
+            },
+            "address_line1": {
+              "type": "null"
+            },
+            "address_line1_check": {
+              "type": "null"
+            },
+            "address_line2": {
+              "type": "null"
+            },
+            "address_state": {
+              "type": "null"
+            },
+            "address_zip": {
+              "type": "null"
+            },
+            "address_zip_check": {
+              "type": "null"
+            },
+            "brand": {
+              "type": "string"
+            },
+            "country": {
+              "type": "string"
+            },
+            "customer": {
+              "type": "string"
+            },
+            "cvc_check": {
+              "type": "string"
+            },
+            "dynamic_last4": {
+              "type": "null"
+            },
+            "exp_month": {
+              "type": "integer"
+            },
+            "exp_year": {
+              "type": "integer"
+            },
+            "fingerprint": {
+              "type": "string",
+              "format": "utc-millisec"
+            },
+            "funding": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "last4": {
+              "type": "string",
+              "format": "utc-millisec"
+            },
+            "metadata": {
+              "type": "object"
+            },
+            "name": {
+              "type": "string",
+              "format": "email"
+            },
+            "object": {
+              "type": "string"
+            },
+            "tokenization_method": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "address_city",
+            "address_country",
+            "address_line1",
+            "address_line1_check",
+            "address_line2",
+            "address_state",
+            "address_zip",
+            "address_zip_check",
+            "brand",
+            "country",
+            "customer",
+            "cvc_check",
+            "dynamic_last4",
+            "exp_month",
+            "exp_year",
+            "fingerprint",
+            "funding",
+            "id",
+            "last4",
+            "metadata",
+            "name",
+            "object",
+            "tokenization_method"
+          ]
+        }
+      },
+      "required": [
+        "object"
+      ]
+    },
+    "id": {
+      "type": "string"
+    },
+    "livemode": {
+      "type": "boolean"
+    },
+    "object": {
+      "type": "string"
+    },
+    "pending_webhooks": {
+      "type": "integer"
+    },
+    "request": {
+      "type": "null"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "api_version",
+    "created",
+    "data",
+    "id",
+    "livemode",
+    "object",
+    "pending_webhooks",
+    "request",
+    "type"
+  ]
+}

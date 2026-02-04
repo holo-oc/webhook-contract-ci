@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "A GitHub Action + CLI to **prevent webhook payload changes from breaking production**.",
   "type": "module",
-
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -11,11 +10,9 @@
     "./cli": "./dist/cli.js",
     "./package.json": "./package.json"
   },
-
   "bin": {
     "wcci": "dist/cli.js"
   },
-
   "files": [
     "dist/",
     "action.yml",
@@ -23,7 +20,6 @@
     "PLAN.md",
     "examples/"
   ],
-
   "scripts": {
     "test": "npm run build && node --test",
     "build": "tsc -p tsconfig.json",
@@ -33,13 +29,13 @@
     "demo:ok": "npm run build && node dist/cli.js diff --base examples/schema.json --next examples/payload.json --show-nonbreaking",
     "demo:breaking": "npm run build && node dist/cli.js diff --base examples/schema.json --next examples/payload-breaking.json --show-nonbreaking",
     "demo:breaking:json": "npm run build && node dist/cli.js diff --base examples/schema.json --next examples/payload-breaking.json --show-nonbreaking --json",
-    "demo:ok:action": "npm run build:dist && node dist/bundle/cli.cjs diff --base examples/schema.json --next examples/payload.json --show-nonbreaking"
+    "demo:ok:action": "npm run build:dist && node dist/bundle/cli.cjs diff --base examples/schema.json --next examples/payload.json --show-nonbreaking",
+    "demo:stripe": "npm run build && node dist/cli.js diff --base examples/schema-stripe.json --next examples/payload-stripe.json",
+    "demo:stripe:breaking": "npm run build && node dist/cli.js diff --base examples/schema-stripe.json --next examples/payload-stripe-breaking.json --show-nonbreaking"
   },
-
   "keywords": [],
   "author": "",
   "license": "ISC",
-
   "dependencies": {
     "ajv": "^8.17.1",
     "json-schema-diff": "^1.0.0",

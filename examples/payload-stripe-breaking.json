@@ -1,0 +1,13 @@
+{
+  "object": "event",
+  "api_version": "2017-02-14",
+  "created": 1535997315,
+  "data": {
+    "object": {
+      "object": "card",
+      "brand": "Visa"
+    }
+  },
+  "livemode": false,
+  "type": "customer.source.expiring"
+}

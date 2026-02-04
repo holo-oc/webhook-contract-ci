@@ -1,0 +1,72 @@
+{
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string"
+    },
+    "issue": {
+      "type": "object",
+      "properties": {
+        "number": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "number",
+        "title",
+        "url"
+      ]
+    },
+    "repository": {
+      "type": "object",
+      "properties": {
+        "full_name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "owner": {
+          "type": "object",
+          "properties": {
+            "login": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "login"
+          ]
+        }
+      },
+      "required": [
+        "full_name",
+        "id",
+        "owner"
+      ]
+    },
+    "sender": {
+      "type": "object",
+      "properties": {
+        "login": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "login"
+      ]
+    }
+  },
+  "required": [
+    "action",
+    "issue",
+    "repository",
+    "sender"
+  ]
+}
