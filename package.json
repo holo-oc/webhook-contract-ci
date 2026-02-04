@@ -59,7 +59,9 @@
     "demo:vercel": "npm run build && node dist/cli.js diff --base examples/schema-vercel.json --next examples/payload-vercel.json",
     "demo:vercel:breaking": "npm run build && node dist/cli.js diff --base examples/schema-vercel.json --next examples/payload-vercel-breaking.json --show-nonbreaking",
     "demo:lemonsqueezy": "npm run build && node dist/cli.js diff --base examples/schema-lemonsqueezy.json --next examples/payload-lemonsqueezy.json",
-    "demo:lemonsqueezy:breaking": "npm run build && node dist/cli.js diff --base examples/schema-lemonsqueezy.json --next examples/payload-lemonsqueezy-breaking.json --show-nonbreaking"
+    "demo:lemonsqueezy:breaking": "npm run build && node dist/cli.js diff --base examples/schema-lemonsqueezy.json --next examples/payload-lemonsqueezy-breaking.json --show-nonbreaking",
+    "demo:paddle": "npm run build && node dist/cli.js diff --base examples/schema-paddle.json --next examples/payload-paddle.json",
+    "demo:paddle:breaking": "npm run build && node dist/cli.js diff --base examples/schema-paddle.json --next examples/payload-paddle-breaking.json --show-nonbreaking"
   },
   "keywords": [
     "webhook",

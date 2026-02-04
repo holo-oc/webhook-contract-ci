@@ -1,0 +1,11 @@
+{
+  "alert_name": "subscription_created",
+  "passthrough": "",
+  "p_signature": "abc123==",
+  "data": {
+    "status": "trialing",
+    "customer": {
+      "id": "ctm_01g1jpq3w44axm9j3gywgj2rn"
+    }
+  }
+}

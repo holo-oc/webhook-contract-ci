@@ -1,0 +1,44 @@
+{
+  "alert_name": "subscription_created",
+  "passthrough": "",
+  "p_signature": "abc123==",
+  "data": {
+    "id": "sub_01gzjh4ace43q7x7a5mywpnq89",
+    "status": "active",
+    "name": "Gold Plan",
+    "paused": false,
+    "paused_reason": null,
+    "trialing": false,
+    "trial_ends": null,
+    "ended": false,
+    "cancellation_effective_date": null,
+    "customer": {
+      "id": "ctm_01g1jpq3w44axm9j3gywgj2rn",
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "items": [
+      {
+        "id": "sib_01g1jpr3w44axm9j3gywgj2rp",
+        "price": {
+          "id": "pri_01g1jpq3w44axm9j3gywgj2rq",
+          "unit_name": "Monthly",
+          "unit_price": 1999,
+          "billing_cycle": {
+            "interval": "month",
+            "frequency": 1
+          }
+        },
+        "quantity": 1,
+        "source": {
+          "source": "paddle_billing"
+        }
+      }
+    ],
+    "custom_data": {},
+    "address": null,
+    "next_billed_at": "2024-01-10",
+    "created_at": "2023-12-10T00:00:00Z",
+    "updated_at": "2023-12-10T00:00:00Z"
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "ok": false,
+  "breakingCount": 17,
+  "breaking": {
+    "removedRequired": [
+      "/data/address",
+      "/data/cancellation_effective_date",
+      "/data/created_at",
+      "/data/custom_data",
+      "/data/customer/email",
+      "/data/customer/name",
+      "/data/ended",
+      "/data/id",
+      "/data/items",
+      "/data/items/*",
+      "/data/name",
+      "/data/next_billed_at",
+      "/data/paused",
+      "/data/paused_reason",
+      "/data/trial_ends",
+      "/data/trialing",
+      "/data/updated_at"
+    ],
+    "requiredBecameOptional": [],
+    "typeChanged": [],
+    "constraintsChanged": []
+  },
+  "nonBreaking": {
+    "added": [],
+    "removedOptional": []
+  },
+  "breakingPaths": [
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/address"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/cancellation_effective_date"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/created_at"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/custom_data"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/customer/email"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/customer/name"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/ended"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/id"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/items"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/items/*"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/name"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/next_billed_at"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/paused"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/paused_reason"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/trial_ends"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/trialing"
+    },
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/updated_at"
+    }
+  ],
+  "nonBreakingPaths": []
+}

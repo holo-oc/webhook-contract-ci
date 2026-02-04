@@ -1,0 +1,167 @@
+{
+  "type": "object",
+  "properties": {
+    "alert_name": {
+      "type": "string"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "null"
+        },
+        "cancellation_effective_date": {
+          "type": "null"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "custom_data": {
+          "type": "object"
+        },
+        "customer": {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string",
+              "format": "email"
+            },
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "email",
+            "id",
+            "name"
+          ]
+        },
+        "ended": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "required": true
+              },
+              "price": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "required": true
+                  },
+                  "unit_name": {
+                    "type": "string",
+                    "required": true
+                  },
+                  "unit_price": {
+                    "type": "integer",
+                    "required": true
+                  },
+                  "billing_cycle": {
+                    "type": "object",
+                    "properties": {
+                      "interval": {
+                        "type": "string",
+                        "required": true
+                      },
+                      "frequency": {
+                        "type": "integer",
+                        "required": true
+                      }
+                    },
+                    "required": true
+                  }
+                },
+                "required": true
+              },
+              "quantity": {
+                "type": "integer",
+                "required": true
+              },
+              "source": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string",
+                    "required": true
+                  }
+                },
+                "required": true
+              }
+            },
+            "required": true
+          }
+        },
+        "name": {
+          "type": "string"
+        },
+        "next_billed_at": {
+          "type": "string",
+          "format": "date"
+        },
+        "paused": {
+          "type": "boolean"
+        },
+        "paused_reason": {
+          "type": "null"
+        },
+        "status": {
+          "type": "string"
+        },
+        "trial_ends": {
+          "type": "null"
+        },
+        "trialing": {
+          "type": "boolean"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "address",
+        "cancellation_effective_date",
+        "created_at",
+        "custom_data",
+        "customer",
+        "ended",
+        "id",
+        "items",
+        "name",
+        "next_billed_at",
+        "paused",
+        "paused_reason",
+        "status",
+        "trial_ends",
+        "trialing",
+        "updated_at"
+      ]
+    },
+    "p_signature": {
+      "type": "string"
+    },
+    "passthrough": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "alert_name",
+    "data",
+    "p_signature",
+    "passthrough"
+  ]
+}
