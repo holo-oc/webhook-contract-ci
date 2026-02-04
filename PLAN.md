@@ -3,9 +3,10 @@
 ## Target user
 Solo devs / small teams building integrations (Stripe, GitHub, Shopify, etc.).
 
-## What we sell
-Free: GitHub Action + basic schema validation.
-Paid (later): hosted payload history, alerts, team sharing, long-term retention.
+## What we ship
+A GitHub Action + CLI for schema inference, validation, and producer-change diffs.
+
+Non-goal (for this repo): hosted services, payments, domains, or outreach.
 
 ## Differentiation vs competitors
 - Hookdeck/Webhook.site/Beeceptor: inspection + replay + routing (feature-heavy, infra-y)

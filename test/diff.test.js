@@ -1105,6 +1105,28 @@ test("diff: widening additionalProperties subschema is breaking", () => {
   assert.match(r.breaking.typeChanged[0], /^\/\{additionalProperties\}/);
 });
 
+test("diff: loosening additionalProperties subschema constraints is breaking", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: { type: "string", maxLength: 3 },
+    properties: { id: { type: "string" } },
+    required: ["id"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: { type: "string", maxLength: 10 },
+    properties: { id: { type: "string" } },
+    required: ["id"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.equal(r.breaking.constraintsChanged.length, 1);
+  assert.match(r.breaking.constraintsChanged[0], /^\/\{additionalProperties\}/);
+  assert.match(r.breaking.constraintsChanged[0], /maxLength loosened/);
+});
+
 test("diff: adding an additionalProperties subschema (tightening) is non-breaking", () => {
   const base = normalizeToJsonSchema({
     type: "object",

@@ -125,7 +125,10 @@ removed required paths:
 - /id
 ```
 
-(For a deterministic, copy/paste-able snapshot, see `examples/demo-breaking-output.txt` and `examples/demo-breaking-output.json`.)
+(For deterministic, copy/paste-able snapshots, see:
+- `examples/demo-ok-output.txt`
+- `examples/demo-breaking-output.txt`
+- `examples/demo-breaking-output.json`.)
 
 ### Infer a baseline schema
 
