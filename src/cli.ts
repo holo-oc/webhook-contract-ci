@@ -13,7 +13,12 @@ import {
   validateAgainstSchema,
 } from "./lib.js";
 
-const VERSION = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf8")).version;
+let VERSION;
+try {
+  VERSION = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf8")).version;
+} catch {
+  VERSION = JSON.parse(fs.readFileSync(path.join(process.cwd(), "package.json"), "utf8")).version;
+}
 
 type Cmd = "infer" | "check" | "diff";
 
