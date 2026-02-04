@@ -9,8 +9,25 @@ import schemaDiff from "json-schema-diff";
 
 type Cmd = "infer" | "check" | "diff";
 
+type TypeName =
+  | "null"
+  | "boolean"
+  | "number"
+  | "integer"
+  | "string"
+  | "array"
+  | "object";
+
+type NodeInfo = {
+  pointer: string; // JSON pointer-ish ("/a/b")
+  type?: TypeName | TypeName[];
+  required: boolean;
+};
+
 function usage(): never {
-  console.error(`wcci - webhook contract CI (WIP)\n\nCommands:\n  infer --in <payload.json> --out <schema.json>\n  check --schema <schema.json> --in <payload.json>\n  diff --base <schema.json> --next <schema.json>\n`);
+  console.error(
+    `wcci - webhook contract CI (WIP)\n\nCommands:\n  infer --in <payload.json> --out <schema.json>\n  check --schema <schema.json> --in <payload.json>\n  diff --base <schema.json> --next <payload.json>\n\nNotes:\n  - diff infers a schema from --next payload and compares it to --base.\n  - exits 1 if breaking changes are detected.\n`
+  );
   process.exit(2);
 }
 
@@ -18,6 +35,10 @@ function argValue(flag: string): string | undefined {
   const i = process.argv.indexOf(flag);
   if (i === -1) return undefined;
   return process.argv[i + 1];
+}
+
+function argFlag(flag: string): boolean {
+  return process.argv.includes(flag);
 }
 
 function readJson(file: string): unknown {
@@ -85,6 +106,122 @@ function normalizeToJsonSchema(input: any): any {
   return out;
 }
 
+function inferSchemaFromPayload(payload: unknown): any {
+  const rawSchema = toJsonSchema(payload, { required: true, arrays: { mode: "all" } });
+  return normalizeToJsonSchema(rawSchema);
+}
+
+function toTypeList(t: any): TypeName[] | undefined {
+  if (!t) return undefined;
+  if (typeof t === "string") return [t as TypeName];
+  if (Array.isArray(t)) return t as TypeName[];
+  return undefined;
+}
+
+function typeCompatible(base?: TypeName | TypeName[], next?: TypeName | TypeName[]): boolean {
+  // If either side doesn't specify a type, we can't confidently call it breaking.
+  if (!base || !next) return true;
+  const b = new Set(toTypeList(base));
+  const n = new Set(toTypeList(next));
+
+  // compatible if intersection is non-empty
+  for (const bt of b) {
+    if (n.has(bt)) return true;
+  }
+  return false;
+}
+
+function escapePointerToken(token: string): string {
+  // RFC6901-ish
+  return token.replace(/~/g, "~0").replace(/\//g, "~1");
+}
+
+function indexSchema(schema: any): Map<string, NodeInfo> {
+  const out = new Map<string, NodeInfo>();
+
+  function walk(node: any, pointer: string, required: boolean) {
+    if (!node || typeof node !== "object") return;
+
+    const info: NodeInfo = {
+      pointer,
+      type: node.type,
+      required,
+    };
+
+    // Store even intermediate nodes so we can detect type changes at objects/arrays too.
+    out.set(pointer, info);
+
+    if (node.type === "object" && node.properties && typeof node.properties === "object") {
+      const req = new Set<string>(Array.isArray(node.required) ? node.required : []);
+      for (const [k, v] of Object.entries<any>(node.properties)) {
+        const childPtr = pointer === "/" ? `/${escapePointerToken(k)}` : `${pointer}/${escapePointerToken(k)}`;
+        walk(v, childPtr, req.has(k));
+      }
+    }
+
+    if (node.type === "array" && node.items) {
+      // Use a stable token to represent the "element" schema.
+      const childPtr = pointer === "/" ? "/items" : `${pointer}/items`;
+      walk(node.items, childPtr, required);
+    }
+  }
+
+  walk(schema, "/", true);
+  return out;
+}
+
+function summarizeDiff(baseSchema: any, nextSchema: any) {
+  const baseIdx = indexSchema(baseSchema);
+  const nextIdx = indexSchema(nextSchema);
+
+  const added: string[] = [];
+  const removedRequired: string[] = [];
+  const removedOptional: string[] = [];
+  const requiredBecameOptional: string[] = [];
+  const typeChanged: string[] = [];
+
+  for (const [ptr, b] of baseIdx.entries()) {
+    const n = nextIdx.get(ptr);
+    if (!n) {
+      if (b.required) removedRequired.push(ptr);
+      else removedOptional.push(ptr);
+      continue;
+    }
+
+    if (b.required && !n.required) {
+      requiredBecameOptional.push(ptr);
+    }
+
+    if (!typeCompatible(b.type, n.type)) {
+      typeChanged.push(`${ptr} (${JSON.stringify(b.type)} -> ${JSON.stringify(n.type)})`);
+    }
+  }
+
+  for (const [ptr] of nextIdx.entries()) {
+    if (!baseIdx.has(ptr)) added.push(ptr);
+  }
+
+  const breaking = {
+    removedRequired,
+    requiredBecameOptional,
+    typeChanged,
+  };
+
+  const nonBreaking = {
+    added,
+    removedOptional,
+  };
+
+  const breakingCount =
+    breaking.removedRequired.length + breaking.requiredBecameOptional.length + breaking.typeChanged.length;
+
+  return {
+    breaking,
+    nonBreaking,
+    breakingCount,
+  };
+}
+
 async function main() {
   const cmd = process.argv[2] as Cmd | undefined;
   if (!cmd || (cmd !== "infer" && cmd !== "check" && cmd !== "diff")) usage();
@@ -95,10 +232,7 @@ async function main() {
     if (!inFile || !outFile) usage();
 
     const payload = readJson(inFile);
-    // NOTE: this is intentionally simple for the MVP scaffold.
-    // We'll improve schema quality after evaluating more inferrers.
-    const rawSchema = toJsonSchema(payload, { required: true, arrays: { mode: "all" } });
-    const schema = normalizeToJsonSchema(rawSchema);
+    const schema = inferSchemaFromPayload(payload);
 
     writeJson(outFile, schema);
     console.log(`wrote schema -> ${outFile}`);
@@ -131,30 +265,53 @@ async function main() {
     const nextFile = argValue("--next");
     if (!baseFile || !nextFile) usage();
 
-    const base = normalizeToJsonSchema(readJson(baseFile));
-    const next = normalizeToJsonSchema(readJson(nextFile));
+    const baseSchema = normalizeToJsonSchema(readJson(baseFile));
 
-    // json-schema-diff returns `{ added, removed }` and will treat removals as breaking.
-    const res: any = await schemaDiff.diffSchemas({
-      sourceSchema: base,
-      destinationSchema: next,
-    });
+    // diff semantics: take a next *payload sample*, infer its schema, and compare.
+    const nextPayload = readJson(nextFile);
+    const nextSchema = inferSchemaFromPayload(nextPayload);
 
-    const removalsFound = Boolean(res?.removalsFound);
-    const additionsFound = Boolean(res?.additionsFound);
+    const { breaking, nonBreaking, breakingCount } = summarizeDiff(baseSchema, nextSchema);
 
-    if (removalsFound) {
-      console.error("breaking schema changes detected (removalsFound=true)");
-      if (res?.removedJsonSchema) {
-        console.error(JSON.stringify(res.removedJsonSchema, null, 2));
+    // Optional: keep json-schema-diff output available for debugging.
+    if (argFlag("--debug-schema-diff")) {
+      const res: any = await schemaDiff.diffSchemas({
+        sourceSchema: baseSchema,
+        destinationSchema: nextSchema,
+      });
+      console.log(JSON.stringify(res, null, 2));
+    }
+
+    const printList = (title: string, items: string[]) => {
+      if (items.length === 0) return;
+      console.log(`${title}:`);
+      for (const x of items) console.log(`- ${x}`);
+    };
+
+    if (breakingCount > 0) {
+      console.error("breaking webhook payload changes detected:");
+      // use stderr for breaking lists
+      const eprintList = (title: string, items: string[]) => {
+        if (items.length === 0) return;
+        console.error(`${title}:`);
+        for (const x of items) console.error(`- ${x}`);
+      };
+      eprintList("removed required paths", breaking.removedRequired);
+      eprintList("required became optional", breaking.requiredBecameOptional);
+      eprintList("type changed", breaking.typeChanged);
+
+      if (argFlag("--show-nonbreaking")) {
+        printList("added paths", nonBreaking.added);
+        printList("removed optional paths", nonBreaking.removedOptional);
       }
+
       process.exit(1);
     }
 
-    console.log("no breaking removals detected");
-    if (additionsFound && res?.addedJsonSchema) {
-      console.log("additions detected:");
-      console.log(JSON.stringify(res.addedJsonSchema, null, 2));
+    console.log("no breaking changes detected");
+    if (argFlag("--show-nonbreaking")) {
+      printList("added paths", nonBreaking.added);
+      printList("removed optional paths", nonBreaking.removedOptional);
     }
     return;
   }

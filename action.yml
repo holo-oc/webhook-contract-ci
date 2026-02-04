@@ -1,0 +1,47 @@
+name: "Webhook Contract CI"
+description: "Validate webhook payload samples against a baseline schema and detect breaking changes."
+author: ""
+
+inputs:
+  mode:
+    description: "check|diff"
+    required: false
+    default: "diff"
+  schema:
+    description: "Path to baseline JSON schema (checked into the repo)"
+    required: true
+  payload:
+    description: "Path to webhook payload sample (JSON) to validate/diff"
+    required: true
+  show_nonbreaking:
+    description: "If true, prints non-breaking additions/removals"
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install wcci dependencies
+      shell: bash
+      run: |
+        cd "${{ github.action_path }}"
+        npm ci --omit=dev
+
+    - name: Run wcci
+      shell: bash
+      run: |
+        cd "${{ github.action_path }}"
+        MODE="${{ inputs.mode }}"
+        SCHEMA="${{ inputs.schema }}"
+        PAYLOAD="${{ inputs.payload }}"
+
+        EXTRA=""
+        if [ "${{ inputs.show_nonbreaking }}" = "true" ]; then
+          EXTRA="--show-nonbreaking"
+        fi
+
+        if [ "$MODE" = "check" ]; then
+          node dist/cli.js check --schema "$SCHEMA" --in "$PAYLOAD"
+        else
+          node dist/cli.js diff --base "$SCHEMA" --next "$PAYLOAD" $EXTRA
+        fi
