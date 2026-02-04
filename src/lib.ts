@@ -35,6 +35,9 @@ export type NodeInfo = {
   minLength?: number;
   maxLength?: number;
 
+  // String constraints
+  pattern?: string;
+
   // Array constraints
   minItems?: number;
   maxItems?: number;
@@ -467,6 +470,14 @@ function isBreakingConstraintChanges(base: NodeInfo, next: NodeInfo): string[] {
 
   cmp("maxLength", "maxLength", "max");
   cmp("minLength", "minLength", "min");
+
+  // pattern
+  // We cannot decide whether one regex is a strict superset of another in general.
+  // Treat explicit pattern changes as breaking; ignore missing `next.pattern` to avoid noisy
+  // false positives from inferred schemas.
+  if (typeof base.pattern === "string" && typeof next.pattern === "string") {
+    if (base.pattern !== next.pattern) reasons.push(`pattern changed`);
+  }
   cmp("maxItems", "maxItems", "max");
   cmp("minItems", "minItems", "min");
   cmp("maxProperties", "maxProperties", "max");
@@ -511,6 +522,7 @@ export function indexSchema(schema: any): Map<string, NodeInfo> {
 
       minLength: typeof node.minLength === "number" ? node.minLength : undefined,
       maxLength: typeof node.maxLength === "number" ? node.maxLength : undefined,
+      pattern: typeof node.pattern === "string" ? node.pattern : undefined,
 
       minItems: typeof node.minItems === "number" ? node.minItems : undefined,
       maxItems: typeof node.maxItems === "number" ? node.maxItems : undefined,

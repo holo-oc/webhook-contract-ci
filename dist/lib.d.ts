@@ -14,6 +14,7 @@ export type NodeInfo = {
     multipleOf?: number;
     minLength?: number;
     maxLength?: number;
+    pattern?: string;
     minItems?: number;
     maxItems?: number;
     minProperties?: number;

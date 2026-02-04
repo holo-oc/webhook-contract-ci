@@ -451,6 +451,50 @@ test("diff: loosening numeric/string bounds is breaking", () => {
   assert.deepEqual(r.breaking.constraintsChanged.map((x) => x.split(" ", 1)[0]), ["/amount", "/id"]);
 });
 
+test("diff: pattern change is treated as breaking when explicitly present in both schemas", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      id: { type: "string", pattern: "^[a-z]+$" },
+    },
+    required: ["id"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      id: { type: "string", pattern: "^[a-z0-9]+$" },
+    },
+    required: ["id"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.equal(r.breaking.constraintsChanged.length, 1);
+  assert.match(r.breaking.constraintsChanged[0], /^\/id/);
+});
+
+test("diff: base pattern vs next missing pattern is ignored (avoid noisy inference gaps)", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      id: { type: "string", pattern: "^[a-z]+$" },
+    },
+    required: ["id"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      id: { type: "string" },
+    },
+    required: ["id"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount, 0);
+});
+
 test("diff: exclusive numeric bound changes are compared across maximum/exclusiveMaximum", () => {
   const baseExclusive = normalizeToJsonSchema({
     type: "object",
