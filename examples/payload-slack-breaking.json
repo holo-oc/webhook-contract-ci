@@ -1,0 +1,30 @@
+{
+  "type": "message",
+  "user": "U2147483697",
+  "text": "<@U2147483697> Hello world",
+  "ts": 1358877451.000048,
+  "thread_ts": "1358877451.000048",
+  "latest_replies": [],
+  "has_more": false,
+  "blocks": [
+    {
+      "type": "rich_text",
+      "block_id": "qBt",
+      "elements": [
+        {
+          "type": "rich_text_section",
+          "elements": [
+            {
+              "type": "user",
+              "user_id": "U2147483697"
+            },
+            {
+              "type": "text",
+              "text": " Hello world"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

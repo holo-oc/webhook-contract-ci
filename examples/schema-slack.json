@@ -1,0 +1,78 @@
+{
+  "type": "object",
+  "properties": {
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "required": true
+          },
+          "block_id": {
+            "type": "string",
+            "required": true
+          },
+          "elements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "required": true
+                },
+                "elements": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  },
+                  "required": true
+                }
+              },
+              "required": true
+            },
+            "required": true
+          }
+        },
+        "required": true
+      }
+    },
+    "channel": {
+      "type": "string"
+    },
+    "has_more": {
+      "type": "boolean"
+    },
+    "latest_replies": {
+      "type": "array"
+    },
+    "text": {
+      "type": "string"
+    },
+    "thread_ts": {
+      "type": "string"
+    },
+    "ts": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "user": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "blocks",
+    "channel",
+    "has_more",
+    "latest_replies",
+    "text",
+    "thread_ts",
+    "ts",
+    "type",
+    "user"
+  ]
+}
