@@ -41,7 +41,9 @@
   "demo:twilio": "npm run build && node dist/cli.js diff --base examples/schema-twilio.json --next examples/payload-twilio.json",
   "demo:twilio:breaking": "npm run build && node dist/cli.js diff --base examples/schema-twilio.json --next examples/payload-twilio-breaking.json --show-nonbreaking",
   "demo:discord": "npm run build && node dist/cli.js diff --base examples/schema-discord.json --next examples/payload-discord.json",
-  "demo:discord:breaking": "npm run build && node dist/cli.js diff --base examples/schema-discord.json --next examples/payload-discord-breaking.json --show-nonbreaking"
+  "demo:discord:breaking": "npm run build && node dist/cli.js diff --base examples/schema-discord.json --next examples/payload-discord-breaking.json --show-nonbreaking",
+  "demo:postmark": "npm run build && node dist/cli.js diff --base examples/schema-postmark.json --next examples/payload-postmark.json",
+  "demo:postmark:breaking": "npm run build && node dist/cli.js diff --base examples/schema-postmark.json --next examples/payload-postmark-breaking.json --show-nonbreaking"
   },
   "keywords": [],
   "author": "",

@@ -1,0 +1,57 @@
+{
+  "type": "object",
+  "properties": {
+    "DeliveredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "Details": {
+      "type": "string"
+    },
+    "MessageID": {
+      "type": "string"
+    },
+    "MessageStream": {
+      "type": "string"
+    },
+    "Metadata": {
+      "type": "object",
+      "properties": {
+        "a_key": {
+          "type": "string"
+        },
+        "b_key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "a_key",
+        "b_key"
+      ]
+    },
+    "Recipient": {
+      "type": "string",
+      "format": "email"
+    },
+    "RecordType": {
+      "type": "string"
+    },
+    "ServerID": {
+      "type": "integer"
+    },
+    "Tag": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "DeliveredAt",
+    "Details",
+    "MessageID",
+    "MessageStream",
+    "Metadata",
+    "Recipient",
+    "RecordType",
+    "ServerID",
+    "Tag"
+  ]
+}
