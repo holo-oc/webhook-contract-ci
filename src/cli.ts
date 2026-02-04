@@ -135,6 +135,7 @@ async function main() {
       eprintList("removed required paths", breaking.removedRequired);
       eprintList("required became optional", breaking.requiredBecameOptional);
       eprintList("type changed", breaking.typeChanged);
+      eprintList("constraints changed", breaking.constraintsChanged);
 
       if (argFlag("--show-nonbreaking")) {
         printList("added paths", nonBreaking.added);

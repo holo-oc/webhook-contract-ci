@@ -109,6 +109,60 @@ test("diff: type change with no overlap is breaking (e.g., string -> number)", (
   assert.match(breaking.typeChanged[0], /^\/id/);
 });
 
+test("diff: enum widening is breaking; enum narrowing is non-breaking", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: { status: { type: "string", enum: ["a", "b"] } },
+    required: ["status"],
+  });
+
+  const nextWiden = normalizeToJsonSchema({
+    type: "object",
+    properties: { status: { type: "string", enum: ["a", "b", "c"] } },
+    required: ["status"],
+  });
+
+  const r1 = summarizeDiff(base, nextWiden);
+  assert.equal(r1.breakingCount > 0, true);
+  assert.equal(r1.breaking.constraintsChanged.length, 1);
+  assert.match(r1.breaking.constraintsChanged[0], /^\/status/);
+
+  const nextNarrow = normalizeToJsonSchema({
+    type: "object",
+    properties: { status: { type: "string", enum: ["a"] } },
+    required: ["status"],
+  });
+
+  const r2 = summarizeDiff(base, nextNarrow);
+  assert.equal(r2.breakingCount, 0);
+});
+
+test("diff: loosening numeric/string bounds is breaking", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      amount: { type: "number", maximum: 10 },
+      id: { type: "string", maxLength: 4 },
+    },
+    required: ["amount", "id"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      amount: { type: "number", maximum: 20 },
+      id: { type: "string", maxLength: 8 },
+    },
+    required: ["amount", "id"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount, 2);
+  assert.deepEqual(r.breaking.typeChanged, []);
+  assert.equal(r.breaking.constraintsChanged.length, 2);
+  assert.deepEqual(r.breaking.constraintsChanged.map((x) => x.split(" ", 1)[0]), ["/amount", "/id"]);
+});
+
 test("diff: missing inferred type for a required field is treated as breaking (conservative)", () => {
   const base = normalizeToJsonSchema(readJson("base.schema.json"));
   const next = normalizeToJsonSchema(readJson("next.missing-type.schema.json"));

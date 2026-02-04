@@ -36,6 +36,10 @@ It treats these as **breaking** (exit code `1`):
 - a path that was **required** in the baseline schema disappears in the new payload sample
 - a path that was **required** becomes **optional**
 - a path’s **type changes** (e.g. `string -> number`)
+- a path’s constraints become **less restrictive** ("widening"), e.g.:
+  - `enum` adds new values
+  - `maximum` increases / `minimum` decreases
+  - `maxLength` increases / `minLength` decreases
 
 It treats these as **non-breaking**:
 

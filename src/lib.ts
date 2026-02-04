@@ -14,6 +14,21 @@ export type NodeInfo = {
   pointer: string; // JSON pointer-ish ("/a/b")
   type?: TypeName | TypeName[];
   required: boolean;
+
+  // Common constraint keywords we can reason about deterministically.
+  // NOTE: Diff semantics are *producer-change* oriented: if next schema is less restrictive
+  // (allows more values) than base, that can be breaking because the producer may start
+  // emitting values that existing consumers (validating against base) will reject.
+  enum?: unknown[];
+  const?: unknown;
+
+  minimum?: number;
+  exclusiveMinimum?: number;
+  maximum?: number;
+  exclusiveMaximum?: number;
+
+  minLength?: number;
+  maxLength?: number;
 };
 
 export function formatAjvErrors(errors: ErrorObject[] | null | undefined): string {
@@ -130,6 +145,63 @@ function isBreakingTypeChange(base?: TypeName | TypeName[], next?: TypeName | Ty
   return false;
 }
 
+function isBreakingConstraintChange(base: NodeInfo, next: NodeInfo): string | null {
+  // Return a short reason string if this node's constraints represent a breaking change.
+  // Rule: widening (less restrictive) compared to base is breaking.
+
+  // enum widening/removal
+  if (Array.isArray(base.enum)) {
+    if (!Array.isArray(next.enum)) return `enum removed`;
+    const b = new Set(base.enum.map((x) => JSON.stringify(x)));
+    for (const v of next.enum) {
+      if (!b.has(JSON.stringify(v))) return `enum widened`;
+    }
+  }
+
+  // const removal/change
+  if (base.const !== undefined) {
+    if (next.const === undefined) return `const removed`;
+    if (JSON.stringify(base.const) !== JSON.stringify(next.const)) return `const changed`;
+  }
+
+  const cmpNum = (
+    key: "minimum" | "exclusiveMinimum" | "maximum" | "exclusiveMaximum",
+    kind: "min" | "max"
+  ) => {
+    const b = (base as any)[key];
+    if (typeof b !== "number") return null;
+    const n = (next as any)[key];
+    if (typeof n !== "number") return `${key} removed`;
+    if (kind === "max" && n > b) return `${key} loosened (${b} -> ${n})`;
+    if (kind === "min" && n < b) return `${key} loosened (${b} -> ${n})`;
+    return null;
+  };
+
+  // Numeric bounds
+  return (
+    cmpNum("maximum", "max") ||
+    cmpNum("exclusiveMaximum", "max") ||
+    cmpNum("minimum", "min") ||
+    cmpNum("exclusiveMinimum", "min") ||
+    (() => {
+      const b = base.maxLength;
+      if (typeof b !== "number") return null;
+      const n = next.maxLength;
+      if (typeof n !== "number") return `maxLength removed`;
+      if (n > b) return `maxLength loosened (${b} -> ${n})`;
+      return null;
+    })() ||
+    (() => {
+      const b = base.minLength;
+      if (typeof b !== "number") return null;
+      const n = next.minLength;
+      if (typeof n !== "number") return `minLength removed`;
+      if (n < b) return `minLength loosened (${b} -> ${n})`;
+      return null;
+    })()
+  );
+}
+
 function escapePointerToken(token: string): string {
   // RFC6901-ish
   return token.replace(/~/g, "~0").replace(/\//g, "~1");
@@ -145,6 +217,17 @@ export function indexSchema(schema: any): Map<string, NodeInfo> {
       pointer,
       type: node.type,
       required,
+
+      enum: Array.isArray(node.enum) ? node.enum : undefined,
+      const: node.const,
+
+      minimum: typeof node.minimum === "number" ? node.minimum : undefined,
+      exclusiveMinimum: typeof node.exclusiveMinimum === "number" ? node.exclusiveMinimum : undefined,
+      maximum: typeof node.maximum === "number" ? node.maximum : undefined,
+      exclusiveMaximum: typeof node.exclusiveMaximum === "number" ? node.exclusiveMaximum : undefined,
+
+      minLength: typeof node.minLength === "number" ? node.minLength : undefined,
+      maxLength: typeof node.maxLength === "number" ? node.maxLength : undefined,
     };
 
     // Store even intermediate nodes so we can detect type changes at objects/arrays too.
@@ -178,6 +261,7 @@ export function summarizeDiff(baseSchema: any, nextSchema: any) {
   const removedOptional: string[] = [];
   const requiredBecameOptional: string[] = [];
   const typeChanged: string[] = [];
+  const constraintsChanged: string[] = [];
 
   for (const [ptr, b] of baseIdx.entries()) {
     const n = nextIdx.get(ptr);
@@ -194,6 +278,9 @@ export function summarizeDiff(baseSchema: any, nextSchema: any) {
     if (isBreakingTypeChange(b.type, n.type)) {
       typeChanged.push(`${ptr} (${JSON.stringify(b.type)} -> ${JSON.stringify(n.type)})`);
     }
+
+    const c = isBreakingConstraintChange(b, n);
+    if (c) constraintsChanged.push(`${ptr} (${c})`);
   }
 
   for (const [ptr] of nextIdx.entries()) {
@@ -210,11 +297,13 @@ export function summarizeDiff(baseSchema: any, nextSchema: any) {
   removedOptional.sort(byPointer);
   requiredBecameOptional.sort(byPointer);
   typeChanged.sort(typeChangedByPointer);
+  constraintsChanged.sort(typeChangedByPointer);
 
   const breaking = {
     removedRequired,
     requiredBecameOptional,
     typeChanged,
+    constraintsChanged,
   };
 
   const nonBreaking = {
@@ -223,7 +312,10 @@ export function summarizeDiff(baseSchema: any, nextSchema: any) {
   };
 
   const breakingCount =
-    breaking.removedRequired.length + breaking.requiredBecameOptional.length + breaking.typeChanged.length;
+    breaking.removedRequired.length +
+    breaking.requiredBecameOptional.length +
+    breaking.typeChanged.length +
+    breaking.constraintsChanged.length;
 
   return {
     breaking,
