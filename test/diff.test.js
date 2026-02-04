@@ -270,6 +270,85 @@ test("diff: adding a property under an additionalProperties:false object is brea
   assert.match(r.breaking.constraintsChanged[0], /^\/newField/);
 });
 
+test("diff: adding a nested property under a closed object is breaking", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      nested: {
+        type: "object",
+        additionalProperties: false,
+        properties: { id: { type: "string" } },
+        required: ["id"],
+      },
+    },
+    required: ["nested"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      nested: {
+        type: "object",
+        additionalProperties: false,
+        properties: { id: { type: "string" }, extra: { type: "string" } },
+        required: ["id", "extra"],
+      },
+    },
+    required: ["nested"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.equal(r.breaking.constraintsChanged.length, 1);
+  assert.match(r.breaking.constraintsChanged[0], /^\/nested\/extra/);
+});
+
+test("diff: array item type widening is breaking", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      arr: { type: "array", items: { type: "string" } },
+    },
+    required: ["arr"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      arr: { type: "array", items: { type: ["string", "null"] } },
+    },
+    required: ["arr"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.equal(r.breaking.typeChanged.length, 1);
+  assert.match(r.breaking.typeChanged[0], /^\/arr\/items/);
+});
+
+test("diff: pointer escaping follows RFC6901-ish rules (~ and /)", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      "a/b": { type: "string" },
+      "til~de": { type: "string" },
+    },
+    required: ["a/b", "til~de"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      // Remove both required fields entirely
+    },
+    required: [],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.deepEqual(r.breaking.removedRequired.sort(), ["/a~1b", "/til~0de"].sort());
+});
+
 test("diff: opening additionalProperties:false -> true is breaking", () => {
   const base = normalizeToJsonSchema({
     type: "object",
