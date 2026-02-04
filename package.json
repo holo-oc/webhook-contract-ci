@@ -49,9 +49,9 @@
   "demo:postmark": "npm run build && node dist/cli.js diff --base examples/schema-postmark.json --next examples/payload-postmark.json",
   "demo:postmark:breaking": "npm run build && node dist/cli.js diff --base examples/schema-postmark.json --next examples/payload-postmark-breaking.json --show-nonbreaking"
   },
-  "keywords": [],
+  "keywords": ["webhook", "contract-testing", "json-schema", "github-action", "ci", "schema-diff"],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "ajv": "^8.17.1",
     "json-schema-diff": "^1.0.0",
