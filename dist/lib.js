@@ -470,6 +470,7 @@ export function summarizeDiff(baseSchema, nextSchema) {
         const t = lastTokenOf(p);
         return t !== WCCI_ITEMS_TOKEN && t !== WCCI_ADDITIONAL_PROPERTIES_TOKEN;
     };
+    const isAdditionalPropertiesSchemaPointer = (p) => lastTokenOf(p) === WCCI_ADDITIONAL_PROPERTIES_TOKEN;
     for (const [ptr, b] of baseIdx.entries()) {
         const n = nextIdx.get(ptr);
         if (!n) {
@@ -504,6 +505,10 @@ export function summarizeDiff(baseSchema, nextSchema) {
     }
     for (const [ptr] of nextIdx.entries()) {
         if (baseIdx.has(ptr))
+            continue;
+        // If the "path" is the synthetic child that represents an additionalProperties *subschema*,
+        // don't report it as a newly added path. It's a constraint node, not a payload field.
+        if (isAdditionalPropertiesSchemaPointer(ptr))
             continue;
         // If the base schema declares an object as "closed" (additionalProperties:false), then adding a
         // new property under that object is breaking: a consumer validating against the base schema

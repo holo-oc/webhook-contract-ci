@@ -878,6 +878,10 @@ test("diff: adding an additionalProperties subschema (tightening) is non-breakin
 
   const r = summarizeDiff(base, next);
   assert.equal(r.breakingCount, 0);
+
+  // The additionalProperties subschema is indexed as a synthetic child node, but we don't want to
+  // report it as a newly "added" payload path.
+  assert.equal(r.nonBreaking.added.includes("/{additionalProperties}"), false);
 });
 
 test("diff: output lists are deterministically sorted by pointer", () => {
