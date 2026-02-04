@@ -171,6 +171,26 @@ function isBreakingConstraintChange(base, next) {
     if (base.additionalProperties === false && next.additionalProperties !== false) {
         return `additionalProperties opened`;
     }
+    // If base had a schema for additionalProperties (meaning "extra" keys are allowed but must
+    // conform to this subschema), and next removes it / switches to `true`, that's a widening.
+    // We also walk & diff the subschema itself separately (see indexSchema), but we need this guard
+    // to catch the case where it disappears entirely.
+    const baseAPIsSchema = base.additionalProperties !== undefined &&
+        base.additionalProperties !== null &&
+        typeof base.additionalProperties === "object";
+    const nextAPIsSchema = next.additionalProperties !== undefined &&
+        next.additionalProperties !== null &&
+        typeof next.additionalProperties === "object";
+    if (baseAPIsSchema && !nextAPIsSchema) {
+        // next.additionalProperties is true/false/undefined
+        if (next.additionalProperties === false) {
+            // tightening: previously extra keys were allowed (with constraints), now they're forbidden.
+            // For producer-change diff, that's not breaking.
+        }
+        else {
+            return `additionalProperties schema loosened`;
+        }
+    }
     const cmpNum = (key, kind) => {
         const b = base[key];
         if (typeof b !== "number")
@@ -237,11 +257,19 @@ export function indexSchema(schema) {
         };
         // Store even intermediate nodes so we can detect type changes at objects/arrays too.
         out.set(pointer, info);
-        if (node.type === "object" && node.properties && typeof node.properties === "object") {
-            const req = new Set(Array.isArray(node.required) ? node.required : []);
-            for (const [k, v] of Object.entries(node.properties)) {
-                const childPtr = pointer === "/" ? `/${escapePointerToken(k)}` : `${pointer}/${escapePointerToken(k)}`;
-                walk(v, childPtr, req.has(k));
+        if (node.type === "object") {
+            if (node.properties && typeof node.properties === "object") {
+                const req = new Set(Array.isArray(node.required) ? node.required : []);
+                for (const [k, v] of Object.entries(node.properties)) {
+                    const childPtr = pointer === "/" ? `/${escapePointerToken(k)}` : `${pointer}/${escapePointerToken(k)}`;
+                    walk(v, childPtr, req.has(k));
+                }
+            }
+            // If additionalProperties is a schema object, index it as a child node so we can detect
+            // widen/narrow changes to the allowed shape of "extra" keys.
+            if (node.additionalProperties && typeof node.additionalProperties === "object") {
+                const apPtr = pointer === "/" ? "/additionalProperties" : `${pointer}/additionalProperties`;
+                walk(node.additionalProperties, apPtr, required);
             }
         }
         if (node.type === "array" && node.items) {
@@ -290,7 +318,10 @@ export function summarizeDiff(baseSchema, nextSchema) {
         const lastSlash = ptr.lastIndexOf("/");
         const parentPtr = lastSlash <= 0 ? "/" : ptr.slice(0, lastSlash);
         const parentBase = baseIdx.get(parentPtr);
-        const isPropertyPointer = !ptr.includes("/items") && ptr !== "/items";
+        const isPropertyPointer = !ptr.includes("/items") &&
+            ptr !== "/items" &&
+            !ptr.endsWith("/additionalProperties") &&
+            ptr !== "/additionalProperties";
         if (isPropertyPointer && parentBase?.type === "object" && parentBase.additionalProperties === false) {
             constraintsChanged.push(`${ptr} (added under closed object ${parentPtr})`);
             continue;
