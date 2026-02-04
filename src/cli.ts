@@ -133,11 +133,25 @@ async function main() {
     if (argFlag("--json")) {
       // Convenience: include flattened path lists for consumers that don't want to
       // inspect each category.
+      const splitDetail = (entry: string): { pointer: string; detail?: string } => {
+        // Our human-readable entries are either:
+        // - "/path"
+        // - "/path (details...)"
+        // - "/path (old -> new)"
+        const i = entry.indexOf(" (");
+        if (i === -1) return { pointer: entry };
+
+        let detail = entry.slice(i + 2).trim(); // starts at "("
+        if (detail.startsWith("(") && detail.endsWith(")")) detail = detail.slice(1, -1);
+
+        return { pointer: entry.slice(0, i), detail };
+      };
+
       const breakingPaths = [
         ...breaking.removedRequired.map((p) => ({ kind: "removedRequired", pointer: p })),
         ...breaking.requiredBecameOptional.map((p) => ({ kind: "requiredBecameOptional", pointer: p })),
-        ...breaking.typeChanged.map((p) => ({ kind: "typeChanged", pointer: p })),
-        ...breaking.constraintsChanged.map((p) => ({ kind: "constraintsChanged", pointer: p })),
+        ...breaking.typeChanged.map((p) => ({ kind: "typeChanged", ...splitDetail(p) })),
+        ...breaking.constraintsChanged.map((p) => ({ kind: "constraintsChanged", ...splitDetail(p) })),
       ];
 
       const nonBreakingPaths = argFlag("--show-nonbreaking")

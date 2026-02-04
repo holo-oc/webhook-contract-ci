@@ -141,6 +141,8 @@ wcci check --schema schemas/webhook.schema.json --in samples/webhook.payload.jso
 wcci diff --base schemas/webhook.schema.json --next samples/webhook.payload.json --show-nonbreaking
 
 # Or machine-readable output (still uses exit codes)
+# Note: `breakingPaths` entries include a `pointer` plus optional `detail` for categories
+# like `typeChanged` and `constraintsChanged`.
 wcci diff --base schemas/webhook.schema.json --next samples/webhook.payload.json --json
 ```
 
