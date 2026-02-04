@@ -13,7 +13,7 @@ import {
   validateAgainstSchema,
 } from "./lib.js";
 
-let VERSION;
+let VERSION: string;
 try {
   VERSION = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf8")).version;
 } catch {
