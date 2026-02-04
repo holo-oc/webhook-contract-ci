@@ -15,11 +15,14 @@ import {
 
 type Cmd = "infer" | "check" | "diff";
 
-function usage(): never {
-  console.error(
-    `wcci - webhook contract CI (WIP)\n\nCommands:\n  infer --in <payload.json> --out <schema.json>\n  check --schema <schema.json> --in <payload.json>\n  diff --base <schema.json> --next <payload.json>\n\nNotes:\n  - diff infers a schema from --next payload and compares it to --base.\n  - exits 1 if breaking changes are detected.\n`
+type ExitCode = 0 | 1 | 2;
+
+function usage(code: ExitCode = 2): never {
+  const out = code === 0 ? console.log : console.error;
+  out(
+    `wcci - webhook contract CI\n\nUsage:\n  wcci infer --in <payload.json> --out <schema.json>\n  wcci check --schema <schema.json> --in <payload.json>\n  wcci diff --base <schema.json> --next <payload.json> [--show-nonbreaking]\n\nOptions:\n  -h, --help              Show help\n  --show-nonbreaking      Also print non-breaking adds/removals (diff mode)\n  --debug-schema-diff     Print json-schema-diff output (diff mode)\n\nExit codes:\n  0  success / no breaking changes\n  1  breaking changes (diff) or validation failure (check)\n  2  usage / input error\n`
   );
-  process.exit(2);
+  process.exit(code);
 }
 
 function argValue(flag: string): string | undefined {
@@ -33,8 +36,22 @@ function argFlag(flag: string): boolean {
 }
 
 function readJson(file: string): unknown {
-  const text = fs.readFileSync(file, "utf8");
-  return JSON.parse(text);
+  try {
+    const text = fs.readFileSync(file, "utf8");
+    try {
+      return JSON.parse(text);
+    } catch (e: any) {
+      console.error(`invalid JSON in ${file}: ${e?.message ?? String(e)}`);
+      process.exit(2);
+    }
+  } catch (e: any) {
+    if (e?.code === "ENOENT") {
+      console.error(`file not found: ${file}`);
+      process.exit(2);
+    }
+    console.error(`failed to read ${file}: ${e?.message ?? String(e)}`);
+    process.exit(2);
+  }
 }
 
 function writeJson(file: string, value: unknown) {
@@ -43,13 +60,15 @@ function writeJson(file: string, value: unknown) {
 }
 
 async function main() {
+  if (process.argv.includes("-h") || process.argv.includes("--help")) usage(0);
+
   const cmd = process.argv[2] as Cmd | undefined;
-  if (!cmd || (cmd !== "infer" && cmd !== "check" && cmd !== "diff")) usage();
+  if (!cmd || (cmd !== "infer" && cmd !== "check" && cmd !== "diff")) usage(2);
 
   if (cmd === "infer") {
     const inFile = argValue("--in");
     const outFile = argValue("--out");
-    if (!inFile || !outFile) usage();
+    if (!inFile || !outFile) usage(2);
 
     const payload = readJson(inFile);
     const schema = inferSchemaFromPayload(payload);
@@ -62,7 +81,7 @@ async function main() {
   if (cmd === "check") {
     const schemaFile = argValue("--schema");
     const inFile = argValue("--in");
-    if (!schemaFile || !inFile) usage();
+    if (!schemaFile || !inFile) usage(2);
 
     const schema = normalizeToJsonSchema(readJson(schemaFile));
     const payload = readJson(inFile);
@@ -80,7 +99,7 @@ async function main() {
   if (cmd === "diff") {
     const baseFile = argValue("--base");
     const nextFile = argValue("--next");
-    if (!baseFile || !nextFile) usage();
+    if (!baseFile || !nextFile) usage(2);
 
     const baseSchema = normalizeToJsonSchema(readJson(baseFile));
 

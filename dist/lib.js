@@ -73,9 +73,13 @@ function toTypeList(t) {
     return undefined;
 }
 function typeCompatible(base, next) {
-    // If either side doesn't specify a type, we can't confidently call it breaking.
-    if (!base || !next)
+    // Conservative for consumers:
+    // - If the baseline (base) specifies a type but next doesn't, treat as incompatible (breaking).
+    // - If the baseline doesn't specify a type, we can't call a change breaking based on type alone.
+    if (!base)
         return true;
+    if (!next)
+        return false;
     const b = new Set(toTypeList(base));
     const n = new Set(toTypeList(next));
     // compatible if intersection is non-empty

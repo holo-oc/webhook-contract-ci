@@ -47,6 +47,16 @@ test("diff: type change is breaking", () => {
   assert.match(breaking.typeChanged[0], /^\/id/);
 });
 
+test("diff: missing inferred type for a required field is treated as breaking (conservative)", () => {
+  const base = normalizeToJsonSchema(readJson("base.schema.json"));
+  const next = normalizeToJsonSchema(readJson("next.missing-type.schema.json"));
+
+  const { breaking, breakingCount } = summarizeDiff(base, next);
+  assert.equal(breakingCount > 0, true);
+  assert.equal(breaking.typeChanged.length, 1);
+  assert.match(breaking.typeChanged[0], /^\/id/);
+});
+
 test("diff: added fields + removed optional fields are non-breaking", () => {
   const base = normalizeToJsonSchema(readJson("base.schema.json"));
 

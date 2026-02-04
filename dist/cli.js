@@ -4,9 +4,10 @@ import path from "node:path";
 import process from "node:process";
 import schemaDiff from "json-schema-diff";
 import { formatAjvErrors, inferSchemaFromPayload, normalizeToJsonSchema, summarizeDiff, validateAgainstSchema, } from "./lib.js";
-function usage() {
-    console.error(`wcci - webhook contract CI (WIP)\n\nCommands:\n  infer --in <payload.json> --out <schema.json>\n  check --schema <schema.json> --in <payload.json>\n  diff --base <schema.json> --next <payload.json>\n\nNotes:\n  - diff infers a schema from --next payload and compares it to --base.\n  - exits 1 if breaking changes are detected.\n`);
-    process.exit(2);
+function usage(code = 2) {
+    const out = code === 0 ? console.log : console.error;
+    out(`wcci - webhook contract CI\n\nUsage:\n  wcci infer --in <payload.json> --out <schema.json>\n  wcci check --schema <schema.json> --in <payload.json>\n  wcci diff --base <schema.json> --next <payload.json> [--show-nonbreaking]\n\nOptions:\n  -h, --help              Show help\n  --show-nonbreaking      Also print non-breaking adds/removals (diff mode)\n  --debug-schema-diff     Print json-schema-diff output (diff mode)\n\nExit codes:\n  0  success / no breaking changes\n  1  breaking changes (diff) or validation failure (check)\n  2  usage / input error\n`);
+    process.exit(code);
 }
 function argValue(flag) {
     const i = process.argv.indexOf(flag);
@@ -18,22 +19,40 @@ function argFlag(flag) {
     return process.argv.includes(flag);
 }
 function readJson(file) {
-    const text = fs.readFileSync(file, "utf8");
-    return JSON.parse(text);
+    try {
+        const text = fs.readFileSync(file, "utf8");
+        try {
+            return JSON.parse(text);
+        }
+        catch (e) {
+            console.error(`invalid JSON in ${file}: ${e?.message ?? String(e)}`);
+            process.exit(2);
+        }
+    }
+    catch (e) {
+        if (e?.code === "ENOENT") {
+            console.error(`file not found: ${file}`);
+            process.exit(2);
+        }
+        console.error(`failed to read ${file}: ${e?.message ?? String(e)}`);
+        process.exit(2);
+    }
 }
 function writeJson(file, value) {
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, JSON.stringify(value, null, 2) + "\n");
 }
 async function main() {
+    if (process.argv.includes("-h") || process.argv.includes("--help"))
+        usage(0);
     const cmd = process.argv[2];
     if (!cmd || (cmd !== "infer" && cmd !== "check" && cmd !== "diff"))
-        usage();
+        usage(2);
     if (cmd === "infer") {
         const inFile = argValue("--in");
         const outFile = argValue("--out");
         if (!inFile || !outFile)
-            usage();
+            usage(2);
         const payload = readJson(inFile);
         const schema = inferSchemaFromPayload(payload);
         writeJson(outFile, schema);
@@ -44,7 +63,7 @@ async function main() {
         const schemaFile = argValue("--schema");
         const inFile = argValue("--in");
         if (!schemaFile || !inFile)
-            usage();
+            usage(2);
         const schema = normalizeToJsonSchema(readJson(schemaFile));
         const payload = readJson(inFile);
         const { ok, errors } = validateAgainstSchema(schema, payload);
@@ -59,7 +78,7 @@ async function main() {
         const baseFile = argValue("--base");
         const nextFile = argValue("--next");
         if (!baseFile || !nextFile)
-            usage();
+            usage(2);
         const baseSchema = normalizeToJsonSchema(readJson(baseFile));
         // diff semantics: take a next *payload sample*, infer its schema, and compare.
         const nextPayload = readJson(nextFile);
