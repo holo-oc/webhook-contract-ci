@@ -40,6 +40,8 @@ It treats these as **breaking** (exit code `1`):
   - `enum` adds new values
   - `maximum` increases / `minimum` decreases
   - `maxLength` increases / `minLength` decreases
+  - an object goes from `additionalProperties: false` (closed) to allowing extra properties
+  - a new property is added under a closed object (`additionalProperties: false`)
 
 It treats these as **non-breaking**:
 

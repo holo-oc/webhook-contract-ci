@@ -244,6 +244,57 @@ test("diff: added fields + removed optional fields are non-breaking", () => {
   assert.deepEqual(nonBreaking.removedOptional, ["/opt"]);
 });
 
+test("diff: adding a property under an additionalProperties:false object is breaking", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      id: { type: "string" },
+    },
+    required: ["id"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      id: { type: "string" },
+      newField: { type: "string" },
+    },
+    required: ["id", "newField"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.equal(r.breaking.constraintsChanged.length, 1);
+  assert.match(r.breaking.constraintsChanged[0], /^\/newField/);
+});
+
+test("diff: opening additionalProperties:false -> true is breaking", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      id: { type: "string" },
+    },
+    required: ["id"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: true,
+    properties: {
+      id: { type: "string" },
+    },
+    required: ["id"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.equal(r.breaking.constraintsChanged.length, 1);
+  assert.match(r.breaking.constraintsChanged[0], /^\/ \(additionalProperties opened\)$/);
+});
+
 test("diff: output lists are deterministically sorted by pointer", () => {
   const base = normalizeToJsonSchema({
     type: "object",

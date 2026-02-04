@@ -164,6 +164,13 @@ function isBreakingConstraintChange(base, next) {
         if (stableStringify(base.const) !== stableStringify(next.const))
             return `const changed`;
     }
+    // additionalProperties
+    // If base was a "closed" object (no extra fields allowed), and next opens it up, that is a
+    // producer-widening change: the producer can start sending new fields that consumers (validating
+    // against the base schema) will reject.
+    if (base.additionalProperties === false && next.additionalProperties !== false) {
+        return `additionalProperties opened`;
+    }
     const cmpNum = (key, kind) => {
         const b = base[key];
         if (typeof b !== "number")
@@ -220,6 +227,7 @@ export function indexSchema(schema) {
             required,
             enum: Array.isArray(node.enum) ? node.enum : undefined,
             const: node.const,
+            additionalProperties: node.type === "object" ? node.additionalProperties : undefined,
             minimum: typeof node.minimum === "number" ? node.minimum : undefined,
             exclusiveMinimum: typeof node.exclusiveMinimum === "number" ? node.exclusiveMinimum : undefined,
             maximum: typeof node.maximum === "number" ? node.maximum : undefined,
@@ -274,8 +282,20 @@ export function summarizeDiff(baseSchema, nextSchema) {
             constraintsChanged.push(`${ptr} (${c})`);
     }
     for (const [ptr] of nextIdx.entries()) {
-        if (!baseIdx.has(ptr))
-            added.push(ptr);
+        if (baseIdx.has(ptr))
+            continue;
+        // If the base schema declares an object as "closed" (additionalProperties:false), then adding a
+        // new property under that object is breaking: a consumer validating against the base schema
+        // will reject payloads containing the new property.
+        const lastSlash = ptr.lastIndexOf("/");
+        const parentPtr = lastSlash <= 0 ? "/" : ptr.slice(0, lastSlash);
+        const parentBase = baseIdx.get(parentPtr);
+        const isPropertyPointer = !ptr.includes("/items") && ptr !== "/items";
+        if (isPropertyPointer && parentBase?.type === "object" && parentBase.additionalProperties === false) {
+            constraintsChanged.push(`${ptr} (added under closed object ${parentPtr})`);
+            continue;
+        }
+        added.push(ptr);
     }
     // Determinism: always return lists in a stable order so CI output doesn't flap.
     // We sort by pointer, and for typeChanged we sort by the pointer prefix.
