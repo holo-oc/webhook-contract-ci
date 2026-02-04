@@ -323,7 +323,7 @@ test("diff: array item type widening is breaking", () => {
   const r = summarizeDiff(base, next);
   assert.equal(r.breakingCount > 0, true);
   assert.equal(r.breaking.typeChanged.length, 1);
-  assert.match(r.breaking.typeChanged[0], /^\/arr\/items/);
+  assert.match(r.breaking.typeChanged[0], /^\/arr\/__wcci_items/);
 });
 
 test("diff: pointer escaping follows RFC6901-ish rules (~ and /)", () => {
@@ -417,7 +417,7 @@ test("diff: widening additionalProperties subschema is breaking", () => {
   const r = summarizeDiff(base, next);
   assert.equal(r.breakingCount > 0, true);
   assert.equal(r.breaking.typeChanged.length, 1);
-  assert.match(r.breaking.typeChanged[0], /^\/additionalProperties/);
+  assert.match(r.breaking.typeChanged[0], /^\/__wcci_additionalProperties/);
 });
 
 test("diff: adding an additionalProperties subschema (tightening) is non-breaking", () => {
@@ -471,4 +471,32 @@ test("infer: inferred schema has deterministically sorted object properties + re
 
   assert.deepEqual(Object.keys(schema.properties), ["aaa", "zzz"]);
   assert.deepEqual(schema.required, ["aaa", "zzz"]);
+});
+
+test("diff: property named 'items' does not collide with array items sentinel", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      items: { type: "string" },
+      arr: { type: "array", items: { type: "string" } },
+    },
+    required: ["items", "arr"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      items: { type: "string" },
+      arr: { type: "array", items: { type: "string" } },
+      extra: { type: "string" },
+    },
+    required: ["items", "arr", "extra"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.equal(r.breaking.constraintsChanged.length, 1);
+  assert.match(r.breaking.constraintsChanged[0], /^\/extra/);
 });

@@ -31,6 +31,10 @@ You typically commit two things:
 ### Breaking diff semantics
 `wcci diff` is opinionated for webhook *consumers*.
 
+Note on pointers: output is JSON-pointer-ish (e.g. `/nested/id`). For some synthetic schema nodes we use internal tokens to avoid collisions with real property names:
+- array item schemas: `/__wcci_items`
+- `additionalProperties` subschemas: `/__wcci_additionalProperties`
+
 It treats these as **breaking** (exit code `1`):
 
 - a path that was **required** in the baseline schema disappears in the new payload sample

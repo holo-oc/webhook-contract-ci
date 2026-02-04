@@ -272,6 +272,9 @@ function escapePointerToken(token: string): string {
   return token.replace(/~/g, "~0").replace(/\//g, "~1");
 }
 
+const WCCI_ITEMS_TOKEN = "__wcci_items";
+const WCCI_ADDITIONAL_PROPERTIES_TOKEN = "__wcci_additionalProperties";
+
 export function indexSchema(schema: any): Map<string, NodeInfo> {
   const out = new Map<string, NodeInfo>();
 
@@ -314,14 +317,17 @@ export function indexSchema(schema: any): Map<string, NodeInfo> {
       // If additionalProperties is a schema object, index it as a child node so we can detect
       // widen/narrow changes to the allowed shape of "extra" keys.
       if (node.additionalProperties && typeof node.additionalProperties === "object") {
-        const apPtr = pointer === "/" ? "/additionalProperties" : `${pointer}/additionalProperties`;
+        const apPtr =
+          pointer === "/" ? `/${WCCI_ADDITIONAL_PROPERTIES_TOKEN}` : `${pointer}/${WCCI_ADDITIONAL_PROPERTIES_TOKEN}`;
         walk(node.additionalProperties, apPtr, required);
       }
     }
 
     if (node.type === "array" && node.items) {
-      // Use a stable token to represent the "element" schema.
-      const childPtr = pointer === "/" ? "/items" : `${pointer}/items`;
+      // Use an internal token to represent the "element" schema.
+      // NOTE: We intentionally avoid the plain token "items" because it can collide with a real
+      // object property named "items" (and likewise for additionalProperties).
+      const childPtr = pointer === "/" ? `/${WCCI_ITEMS_TOKEN}` : `${pointer}/${WCCI_ITEMS_TOKEN}`;
       walk(node.items, childPtr, required);
     }
   }
@@ -371,11 +377,10 @@ export function summarizeDiff(baseSchema: any, nextSchema: any) {
     const parentPtr = lastSlash <= 0 ? "/" : ptr.slice(0, lastSlash);
     const parentBase = baseIdx.get(parentPtr);
 
+    const lastToken = ptr === "/" ? "" : ptr.slice(ptr.lastIndexOf("/") + 1);
     const isPropertyPointer =
-      !ptr.includes("/items") &&
-      ptr !== "/items" &&
-      !ptr.endsWith("/additionalProperties") &&
-      ptr !== "/additionalProperties";
+      lastToken !== WCCI_ITEMS_TOKEN &&
+      lastToken !== WCCI_ADDITIONAL_PROPERTIES_TOKEN;
 
     if (isPropertyPointer && parentBase?.type === "object" && parentBase.additionalProperties === false) {
       constraintsChanged.push(`${ptr} (added under closed object ${parentPtr})`);
