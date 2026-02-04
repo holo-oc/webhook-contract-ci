@@ -1535,3 +1535,52 @@ test("diff: uniqueItems constraint", () => {
   const r4 = summarizeDiff(baseNoUnique, nextTrue);
   assert.equal(r4.breakingCount, 0);
 });
+
+test("diff: property addition within an allOf sub-schema where additionalProperties is false is breaking", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      metadata: {
+        type: "object",
+        allOf: [
+          {
+            type: "object",
+            properties: {
+              existingProp: { type: "string" },
+            },
+          },
+          {
+            additionalProperties: false,
+          },
+        ],
+      },
+    },
+    required: ["metadata"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      metadata: {
+        type: "object",
+        allOf: [
+          {
+            type: "object",
+            properties: {
+              existingProp: { type: "string" },
+              newProp: { type: "number" },
+            },
+          },
+          {
+            additionalProperties: false,
+          },
+        ],
+      },
+    },
+    required: ["metadata"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.equal(r.breaking.constraintsChanged.some((x) => x.includes("/metadata/newProp")), true);
+});
