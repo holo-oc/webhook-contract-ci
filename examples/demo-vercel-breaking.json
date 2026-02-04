@@ -1,0 +1,58 @@
+{
+  "ok": false,
+  "breakingCount": 19,
+  "breaking": {
+    "removedRequired": [
+      "/payload/build",
+      "/payload/build/id",
+      "/payload/buildCommand",
+      "/payload/creator",
+      "/payload/creator/email",
+      "/payload/creator/id",
+      "/payload/creator/username",
+      "/payload/devCommand",
+      "/payload/framework",
+      "/payload/meta",
+      "/payload/meta/deliveryId",
+      "/payload/outputDirectory",
+      "/payload/projectId",
+      "/payload/ref",
+      "/payload/region",
+      "/payload/rootDirectory",
+      "/payload/sha",
+      "/payload/source",
+      "/payload/target"
+    ],
+    "requiredBecameOptional": [],
+    "typeChanged": [],
+    "constraintsChanged": []
+  },
+  "nonBreaking": {
+    "added": ["/payload/unexpected"],
+    "removedOptional": []
+  },
+  "breakingPaths": [
+    {"kind": "removedRequired", "pointer": "/payload/build"},
+    {"kind": "removedRequired", "pointer": "/payload/build/id"},
+    {"kind": "removedRequired", "pointer": "/payload/buildCommand"},
+    {"kind": "removedRequired", "pointer": "/payload/creator"},
+    {"kind": "removedRequired", "pointer": "/payload/creator/email"},
+    {"kind": "removedRequired", "pointer": "/payload/creator/id"},
+    {"kind": "removedRequired", "pointer": "/payload/creator/username"},
+    {"kind": "removedRequired", "pointer": "/payload/devCommand"},
+    {"kind": "removedRequired", "pointer": "/payload/framework"},
+    {"kind": "removedRequired", "pointer": "/payload/meta"},
+    {"kind": "removedRequired", "pointer": "/payload/meta/deliveryId"},
+    {"kind": "removedRequired", "pointer": "/payload/outputDirectory"},
+    {"kind": "removedRequired", "pointer": "/payload/projectId"},
+    {"kind": "removedRequired", "pointer": "/payload/ref"},
+    {"kind": "removedRequired", "pointer": "/payload/region"},
+    {"kind": "removedRequired", "pointer": "/payload/rootDirectory"},
+    {"kind": "removedRequired", "pointer": "/payload/sha"},
+    {"kind": "removedRequired", "pointer": "/payload/source"},
+    {"kind": "removedRequired", "pointer": "/payload/target"}
+  ],
+  "nonBreakingPaths": [
+    {"kind": "added", "pointer": "/payload/unexpected"}
+  ]
+}

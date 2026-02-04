@@ -1,0 +1,23 @@
+breaking webhook payload changes detected:
+removed required paths:
+- /payload/build
+- /payload/build/id
+- /payload/buildCommand
+- /payload/creator
+- /payload/creator/email
+- /payload/creator/id
+- /payload/creator/username
+- /payload/devCommand
+- /payload/framework
+- /payload/meta
+- /payload/meta/deliveryId
+- /payload/outputDirectory
+- /payload/projectId
+- /payload/ref
+- /payload/region
+- /payload/rootDirectory
+- /payload/sha
+- /payload/source
+- /payload/target
+added paths:
+- /payload/unexpected

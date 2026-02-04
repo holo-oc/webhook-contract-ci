@@ -1,0 +1,122 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "build": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id"
+          ]
+        },
+        "buildCommand": {
+          "type": "string"
+        },
+        "creator": {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string",
+              "format": "email"
+            },
+            "id": {
+              "type": "string"
+            },
+            "username": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "email",
+            "id",
+            "username"
+          ]
+        },
+        "devCommand": {
+          "type": "string"
+        },
+        "framework": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string",
+          "format": "uri"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "deliveryId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "deliveryId"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "outputDirectory": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "ref": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "rootDirectory": {
+          "type": "string"
+        },
+        "sha": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "format": "style"
+        },
+        "target": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "build",
+        "buildCommand",
+        "creator",
+        "devCommand",
+        "framework",
+        "link",
+        "meta",
+        "name",
+        "outputDirectory",
+        "projectId",
+        "ref",
+        "region",
+        "rootDirectory",
+        "sha",
+        "source",
+        "target"
+      ]
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "payload",
+    "type"
+  ]
+}

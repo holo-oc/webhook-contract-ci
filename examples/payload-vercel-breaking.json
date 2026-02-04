@@ -1,0 +1,9 @@
+{
+  "id": "d1a2b3c4-5678-90ab-cdef-1234567890ab",
+  "type": "deployment",
+  "payload": {
+    "name": "my-app",
+    "unexpected": true,
+    "link": "https://my-app-abc123.vercel.app"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "d1a2b3c4-5678-90ab-cdef-1234567890ab",
+  "type": "deployment",
+  "payload": {
+    "projectId": "prj_1234567890abcdef",
+    "name": "my-app",
+    "link": "https://my-app-abc123.vercel.app",
+    "region": "iad1",
+    "framework": "nextjs",
+    "buildCommand": "npm run build",
+    "devCommand": "npm run dev",
+    "outputDirectory": ".vercel/output",
+    "rootDirectory": "/",
+    "target": "production",
+    "ref": "refs/heads/main",
+    "sha": "abc123def4567890abcdef1234567890abcdef12",
+    "source": "git@github.com:vercel/my-app.git",
+    "creator": {
+      "id": "user_1234567890abcdef",
+      "email": "user@example.com",
+      "username": "johndoe"
+    },
+    "meta": {
+      "deliveryId": "del_1234567890abcdef"
+    },
+    "build": {
+      "id": "build_1234567890abcdef"
+    }
+  }
+}
