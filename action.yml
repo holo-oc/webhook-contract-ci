@@ -4,7 +4,7 @@ author: ""
 
 inputs:
   mode:
-    description: "check|diff"
+    description: "infer|check|diff"
     required: false
     default: "diff"
   schema:
@@ -53,7 +53,9 @@ runs:
 
         CLI="$GITHUB_ACTION_PATH/dist/cli.js"
 
-        if [ "$MODE" = "check" ]; then
+        if [ "$MODE" = "infer" ]; then
+          node "$CLI" infer --in "$PAYLOAD" --out "$SCHEMA"
+        elif [ "$MODE" = "check" ]; then
           node "$CLI" check --schema "$SCHEMA" --in "$PAYLOAD"
         else
           node "$CLI" diff --base "$SCHEMA" --next "$PAYLOAD" $EXTRA

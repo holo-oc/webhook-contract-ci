@@ -1,0 +1,44 @@
+# Example: enforce webhook payload contracts in CI (PR)
+#
+# This runs:
+# - infer: regenerate the schema from the sample payload and fail if it would change
+# - check: validate the sample against the committed schema (better error messages)
+# - diff: detect breaking changes vs the committed schema
+name: Webhook contract
+
+on:
+  pull_request:
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # In your own repo, use a tagged release, e.g.:
+      # - uses: your-org/webhook-contract-ci@v1
+      - name: Infer schema (must match committed)
+        uses: owner/webhook-contract-ci@v1
+        with:
+          mode: infer
+          schema: schemas/webhook.schema.json
+          payload: samples/webhook.payload.json
+
+      - name: Fail if schema would change
+        run: |
+          git diff --exit-code -- schemas/webhook.schema.json
+
+      - name: Validate sample against schema
+        uses: owner/webhook-contract-ci@v1
+        with:
+          mode: check
+          schema: schemas/webhook.schema.json
+          payload: samples/webhook.payload.json
+
+      - name: Detect breaking changes
+        uses: owner/webhook-contract-ci@v1
+        with:
+          mode: diff
+          schema: schemas/webhook.schema.json
+          payload: samples/webhook.payload.json
+          show_nonbreaking: true

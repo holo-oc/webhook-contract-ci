@@ -47,6 +47,11 @@ This repo ships a composite action (see `action.yml`).
 
 **Important:** `schema` and `payload` inputs are resolved relative to your repo root (`GITHUB_WORKSPACE`).
 
+Modes:
+- `infer`: regenerate a schema from a payload sample
+- `check`: validate a payload sample against a schema
+- `diff`: detect breaking changes vs a schema
+
 ### Example workflow
 
 ```yaml
@@ -70,7 +75,7 @@ jobs:
           show_nonbreaking: true
 ```
 
-(Also see `examples/workflows/webhook-contract.yml`.)
+(Also see `examples/workflows/webhook-contract.yml` and `examples/workflows/webhook-contract-pr.yml`.)
 
 ## CLI
 

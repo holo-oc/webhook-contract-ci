@@ -23,7 +23,22 @@ jobs:
       - uses: actions/checkout@v4
 
       # Smoke test the composite action in this repo.
-      - uses: ./
+      - name: infer
+        uses: ./
+        with:
+          mode: infer
+          schema: test/fixtures/_generated.schema.json
+          payload: examples/payload.json
+
+      - name: check
+        uses: ./
+        with:
+          mode: check
+          schema: test/fixtures/_generated.schema.json
+          payload: examples/payload.json
+
+      - name: diff
+        uses: ./
         with:
           mode: diff
           schema: test/fixtures/base.schema.json
