@@ -114,6 +114,14 @@ npm run demo:ok
 npm run demo:breaking
 ```
 
+Example output (breaking):
+
+```text
+breaking webhook payload changes detected:
+removed required paths:
+- /id
+```
+
 ### Infer a baseline schema
 
 ```bash

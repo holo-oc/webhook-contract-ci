@@ -562,3 +562,4 @@ export function validateAgainstSchema(schema, payload) {
     const ok = validate(payload);
     return { ok: Boolean(ok), errors: validate.errors };
 }
+//# sourceMappingURL=lib.js.map
