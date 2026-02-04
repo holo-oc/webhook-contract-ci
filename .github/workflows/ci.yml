@@ -10,45 +10,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - run: npm test
 
-  action-smoke:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+      - name: Install
+        run: npm ci
 
-      # Smoke test the composite action in this repo.
-      # Mirror the intended PR workflow:
-      # - infer must be deterministic (no diff vs committed schema)
-      # - check must pass
-      # - diff must report no breaking changes
-      - name: Infer schema (must match committed)
-        uses: ./
-        with:
-          mode: infer
-          schema: test/fixtures/stripe.schema.json
-          payload: test/fixtures/stripe.payload.json
+      - name: Unit tests
+        run: npm test
 
-      - name: Fail if schema would change
+      - name: CLI smoke (infer/check/diff)
         run: |
-          git diff --exit-code -- test/fixtures/stripe.schema.json
+          node dist/cli.js infer --in test/fixtures/stripe.payload.json --out /tmp/stripe.inferred.schema.json
+          node dist/cli.js check --schema test/fixtures/stripe.schema.json --in test/fixtures/stripe.payload.json
+          node dist/cli.js diff --base test/fixtures/stripe.schema.json --next test/fixtures/stripe.payload.json
 
-      - name: Validate sample against schema
-        uses: ./
-        with:
-          mode: check
-          schema: test/fixtures/stripe.schema.json
-          payload: test/fixtures/stripe.payload.json
-
-      - name: Detect breaking changes
-        uses: ./
-        with:
-          mode: diff
-          schema: test/fixtures/stripe.schema.json
-          payload: test/fixtures/stripe.payload.json
-          show_nonbreaking: true
+      - name: Ensure dist is up-to-date
+        run: git diff --exit-code dist

@@ -37,7 +37,44 @@ test("diff: required became optional is breaking", () => {
   assert.deepEqual(breaking.requiredBecameOptional, ["/id"]);
 });
 
-test("diff: type change is breaking", () => {
+test("diff: type widening is breaking (e.g., string -> [string, null])", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: { id: { type: "string" } },
+    required: ["id"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    properties: { id: { type: ["string", "null"] } },
+    required: ["id"],
+  });
+
+  const { breaking, breakingCount } = summarizeDiff(base, next);
+  assert.equal(breakingCount > 0, true);
+  assert.equal(breaking.typeChanged.length, 1);
+  assert.match(breaking.typeChanged[0], /^\/id/);
+});
+
+test("diff: type narrowing is non-breaking (e.g., [string, number] -> string)", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: { id: { type: ["string", "number"] } },
+    required: ["id"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    properties: { id: { type: "string" } },
+    required: ["id"],
+  });
+
+  const { breakingCount, breaking } = summarizeDiff(base, next);
+  assert.equal(breakingCount, 0);
+  assert.deepEqual(breaking.typeChanged, []);
+});
+
+test("diff: type change with no overlap is breaking (e.g., string -> number)", () => {
   const base = normalizeToJsonSchema(readJson("base.schema.json"));
   const next = normalizeToJsonSchema(readJson("next.type-change.schema.json"));
 

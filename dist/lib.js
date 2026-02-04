@@ -72,19 +72,27 @@ function toTypeList(t) {
         return t;
     return undefined;
 }
-function typeCompatible(base, next) {
-    // Conservative for consumers:
-    // - If the baseline (base) specifies a type but next doesn't, treat as incompatible (breaking).
-    // - If the baseline doesn't specify a type, we can't call a change breaking based on type alone.
+function isBreakingTypeChange(base, next) {
+    // Diff semantics are *consumer*-oriented: a webhook producer changes its payload, and we want to
+    // flag changes that can cause existing consumers (validating/parsing against the base schema) to
+    // reject or mis-handle the new payload.
+    //
+    // Therefore:
+    // - If base had a type but next is missing one, treat as breaking (conservative: we can't prove it's safe).
+    // - If base had no type info, we don't call a type change breaking.
+    // - If next's type set is a SUBSET of base's type set ("narrowing"), it's non-breaking.
+    //   (Consumers that accepted the broader base types will still accept the narrowed next type.)
+    // - If next's type set introduces any NEW type not present in base ("widening"), it's breaking.
+    //   (Consumers that assumed the base type(s) may fail when receiving the new type.)
     if (!base)
-        return true;
-    if (!next)
         return false;
+    if (!next)
+        return true;
     const b = new Set(toTypeList(base));
     const n = new Set(toTypeList(next));
-    // compatible if intersection is non-empty
-    for (const bt of b) {
-        if (n.has(bt))
+    // If next has any type not previously allowed, it's breaking.
+    for (const nt of n) {
+        if (!b.has(nt))
             return true;
     }
     return false;
@@ -141,7 +149,7 @@ export function summarizeDiff(baseSchema, nextSchema) {
         if (b.required && !n.required) {
             requiredBecameOptional.push(ptr);
         }
-        if (!typeCompatible(b.type, n.type)) {
+        if (isBreakingTypeChange(b.type, n.type)) {
             typeChanged.push(`${ptr} (${JSON.stringify(b.type)} -> ${JSON.stringify(n.type)})`);
         }
     }
