@@ -49,7 +49,9 @@
     "demo:postmark": "npm run build && node dist/cli.js diff --base examples/schema-postmark.json --next examples/payload-postmark.json",
     "demo:postmark:breaking": "npm run build && node dist/cli.js diff --base examples/schema-postmark.json --next examples/payload-postmark-breaking.json --show-nonbreaking",
     "demo:sendgrid": "npm run build && node dist/cli.js diff --base examples/schema-sendgrid.json --next examples/payload-sendgrid.json",
-    "demo:sendgrid:breaking": "npm run build && node dist/cli.js diff --base examples/schema-sendgrid.json --next examples/payload-sendgrid-breaking.json --show-nonbreaking"
+    "demo:sendgrid:breaking": "npm run build && node dist/cli.js diff --base examples/schema-sendgrid.json --next examples/payload-sendgrid-breaking.json --show-nonbreaking",
+    "demo:mailchimp": "npm run build && node dist/cli.js diff --base examples/schema-mailchimp.json --next examples/payload-mailchimp.json",
+    "demo:mailchimp:breaking": "npm run build && node dist/cli.js diff --base examples/schema-mailchimp.json --next examples/payload-mailchimp-breaking.json --show-nonbreaking"
   },
   "keywords": [
     "webhook",

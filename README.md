@@ -126,6 +126,7 @@ npm run demo:shopify
 npm run demo:twilio
 npm run demo:discord
 npm run demo:resend
+npm run demo:mailchimp
 ```
 
 

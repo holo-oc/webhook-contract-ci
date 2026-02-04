@@ -1,0 +1,72 @@
+{
+  "type": "object",
+  "properties": {
+    "mandrill_events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "required": true
+          },
+          "msg": {
+            "type": "object",
+            "properties": {
+              "ts": {
+                "type": "integer",
+                "required": true
+              },
+              "subject": {
+                "type": "string",
+                "required": true
+              },
+              "email": {
+                "type": "string",
+                "format": "email",
+                "required": true
+              },
+              "sender": {
+                "type": "string",
+                "format": "email",
+                "required": true
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "required": true
+                },
+                "required": true
+              },
+              "state": {
+                "type": "string",
+                "required": true
+              },
+              "metadata": {
+                "type": "object",
+                "properties": {
+                  "user_id": {
+                    "type": "integer",
+                    "required": true
+                  }
+                },
+                "required": true
+              },
+              "_id": {
+                "type": "string",
+                "format": "utc-millisec",
+                "required": true
+              }
+            },
+            "required": true
+          }
+        },
+        "required": true
+      }
+    }
+  },
+  "required": [
+    "mandrill_events"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "mandrill_events": [
+    {
+      "event": "open",
+      "msg": {
+        "ts": 1365109999,
+        "subject": "Roses Are Red, Violets Are On Sale",
+        "email": "flowerfriend@example.com",
+        "sender": "hello@eiffelflowers.biz",
+        "tags": ["violets"],
+        "state": "sent",
+        "metadata": {
+          "user_id": 111
+        }
+      }
+    }
+  ]
+}
