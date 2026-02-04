@@ -1,0 +1,39 @@
+# Self-test: exercise the action in infer/check/diff modes on PRs.
+# This is also a copy-pastable template for consumer repos.
+name: Webhook contract (wcci)
+
+on:
+  pull_request:
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Infer schema (deterministic)
+        uses: ./
+        with:
+          mode: infer
+          schema: /tmp/stripe.inferred.schema.json
+          payload: test/fixtures/stripe.payload.json
+
+      - name: Fail if inferred schema differs from committed fixture
+      # (Uses --no-index so this works even though /tmp is not tracked by git.)
+        run: |
+          git diff --no-index -- test/fixtures/stripe.schema.json /tmp/stripe.inferred.schema.json
+
+      - name: Validate payload against schema
+        uses: ./
+        with:
+          mode: check
+          schema: test/fixtures/stripe.schema.json
+          payload: test/fixtures/stripe.payload.json
+
+      - name: Detect breaking changes
+        uses: ./
+        with:
+          mode: diff
+          schema: test/fixtures/stripe.schema.json
+          payload: test/fixtures/stripe.payload.json
+          show_nonbreaking: true

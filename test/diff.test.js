@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
-import { normalizeToJsonSchema, summarizeDiff } from "../dist/lib.js";
+import { inferSchemaFromPayload, normalizeToJsonSchema, summarizeDiff } from "../dist/lib.js";
 
 const fixturesDir = path.join(process.cwd(), "test", "fixtures");
 
@@ -131,4 +131,16 @@ test("diff: output lists are deterministically sorted by pointer", () => {
   const { breakingCount, nonBreaking } = summarizeDiff(base, next);
   assert.equal(breakingCount, 0);
   assert.deepEqual(nonBreaking.added, ["/aaa", "/zzz"]);
+});
+
+test("infer: inferred schema has deterministically sorted object properties + required arrays", () => {
+  const payload = {
+    zzz: "hi",
+    aaa: "bye",
+  };
+
+  const schema = inferSchemaFromPayload(payload);
+
+  assert.deepEqual(Object.keys(schema.properties), ["aaa", "zzz"]);
+  assert.deepEqual(schema.required, ["aaa", "zzz"]);
 });

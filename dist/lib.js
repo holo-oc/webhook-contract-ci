@@ -25,7 +25,11 @@ export function normalizeToJsonSchema(input) {
     if (out.type === "object" && out.properties && typeof out.properties === "object") {
         const requiredKeys = [];
         const newProps = {};
-        for (const [k, v] of Object.entries(out.properties)) {
+        // Determinism: sort property keys so inferred/normalized schemas don't depend on
+        // JSON insertion order (which can vary across payload samples).
+        const keys = Object.keys(out.properties).sort((a, b) => a.localeCompare(b));
+        for (const k of keys) {
+            const v = out.properties[k];
             const vv = normalizeToJsonSchema(v);
             if (vv && typeof vv === "object" && vv.required === true) {
                 requiredKeys.push(k);
@@ -41,11 +45,11 @@ export function normalizeToJsonSchema(input) {
             // If the input already uses standard JSON Schema `required: string[]`, keep it and
             // merge in any `required: true` property hints.
             const merged = new Set([...(explicitRequired ?? []), ...requiredKeys]);
-            out.required = Array.from(merged);
+            out.required = Array.from(merged).sort((a, b) => a.localeCompare(b));
         }
         else if (booleanRequired) {
             // interpret "required: true" as "all object properties are required"
-            out.required = Object.keys(newProps);
+            out.required = Object.keys(newProps).sort((a, b) => a.localeCompare(b));
         }
         else if (explicitRequired) {
             out.required = explicitRequired;
