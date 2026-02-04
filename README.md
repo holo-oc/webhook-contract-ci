@@ -95,6 +95,16 @@ jobs:
 
 ## CLI
 
+### Quick local demo ("wow" in 10 seconds)
+
+From this repo:
+
+```bash
+npm ci
+npm run demo:ok
+npm run demo:breaking
+```
+
 ### Infer a baseline schema
 
 ```bash
