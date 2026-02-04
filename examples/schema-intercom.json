@@ -1,0 +1,214 @@
+{
+  "type": "object",
+  "properties": {
+    "app_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "integer"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "type": "object",
+          "properties": {
+            "assignee": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "null"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "type"
+              ]
+            },
+            "conversation_message": {
+              "type": "object",
+              "properties": {
+                "attachments": {
+                  "type": "array"
+                },
+                "author": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "type"
+                  ]
+                },
+                "body": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string",
+                  "format": "utc-millisec"
+                },
+                "subject": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "attachments",
+                "author",
+                "body",
+                "id",
+                "subject",
+                "type"
+              ]
+            },
+            "conversation_parts": {
+              "type": "object",
+              "properties": {
+                "conversation_parts": {
+                  "type": "array"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "conversation_parts",
+                "type"
+              ]
+            },
+            "created_at": {
+              "type": "integer"
+            },
+            "id": {
+              "type": "string",
+              "format": "utc-millisec"
+            },
+            "links": {
+              "type": "object",
+              "properties": {
+                "conversation_web": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              },
+              "required": [
+                "conversation_web"
+              ]
+            },
+            "metadata": {
+              "type": "object"
+            },
+            "open": {
+              "type": "boolean"
+            },
+            "read": {
+              "type": "boolean"
+            },
+            "type": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "integer"
+            },
+            "user": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "email",
+                "id",
+                "name",
+                "type"
+              ]
+            }
+          },
+          "required": [
+            "assignee",
+            "conversation_message",
+            "conversation_parts",
+            "created_at",
+            "id",
+            "links",
+            "metadata",
+            "open",
+            "read",
+            "type",
+            "updated_at",
+            "user"
+          ]
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "item",
+        "type"
+      ]
+    },
+    "delivered_at": {
+      "type": "integer"
+    },
+    "delivery_attempts": {
+      "type": "integer"
+    },
+    "delivery_status": {
+      "type": "null"
+    },
+    "first_sent_at": {
+      "type": "integer"
+    },
+    "id": {
+      "type": "string"
+    },
+    "links": {
+      "type": "object"
+    },
+    "self": {
+      "type": "null"
+    },
+    "topic": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "app_id",
+    "created_at",
+    "data",
+    "delivered_at",
+    "delivery_attempts",
+    "delivery_status",
+    "first_sent_at",
+    "id",
+    "links",
+    "self",
+    "topic",
+    "type"
+  ]
+}

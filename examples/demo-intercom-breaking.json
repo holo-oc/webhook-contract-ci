@@ -1,0 +1,23 @@
+{
+  "ok": false,
+  "breakingCount": 1,
+  "breaking": {
+    "removedRequired": [
+      "/data/item/id"
+    ],
+    "requiredBecameOptional": [],
+    "typeChanged": [],
+    "constraintsChanged": []
+  },
+  "nonBreaking": {
+    "added": [],
+    "removedOptional": []
+  },
+  "breakingPaths": [
+    {
+      "kind": "removedRequired",
+      "pointer": "/data/item/id"
+    }
+  ],
+  "nonBreakingPaths": []
+}

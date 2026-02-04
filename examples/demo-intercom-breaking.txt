@@ -1,0 +1,3 @@
+breaking webhook payload changes detected:
+removed required paths:
+- /data/item/id

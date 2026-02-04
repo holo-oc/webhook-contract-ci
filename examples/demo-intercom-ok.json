@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "breakingCount": 0,
+  "breaking": {
+    "removedRequired": [],
+    "requiredBecameOptional": [],
+    "typeChanged": [],
+    "constraintsChanged": []
+  },
+  "breakingPaths": []
+}
