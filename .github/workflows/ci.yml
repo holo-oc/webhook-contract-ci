@@ -23,24 +23,32 @@ jobs:
       - uses: actions/checkout@v4
 
       # Smoke test the composite action in this repo.
-      - name: infer
+      # Mirror the intended PR workflow:
+      # - infer must be deterministic (no diff vs committed schema)
+      # - check must pass
+      # - diff must report no breaking changes
+      - name: Infer schema (must match committed)
         uses: ./
         with:
           mode: infer
-          schema: test/fixtures/_generated.schema.json
-          payload: examples/payload.json
+          schema: test/fixtures/stripe.schema.json
+          payload: test/fixtures/stripe.payload.json
 
-      - name: check
+      - name: Fail if schema would change
+        run: |
+          git diff --exit-code -- test/fixtures/stripe.schema.json
+
+      - name: Validate sample against schema
         uses: ./
         with:
           mode: check
-          schema: test/fixtures/_generated.schema.json
-          payload: examples/payload.json
+          schema: test/fixtures/stripe.schema.json
+          payload: test/fixtures/stripe.payload.json
 
-      - name: diff
+      - name: Detect breaking changes
         uses: ./
         with:
           mode: diff
-          schema: test/fixtures/base.schema.json
-          payload: examples/payload.json
+          schema: test/fixtures/stripe.schema.json
+          payload: test/fixtures/stripe.payload.json
           show_nonbreaking: true
