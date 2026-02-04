@@ -20,7 +20,12 @@ It’s intentionally not published anywhere — just a convenient local fixture 
 
 If the payload drift is breaking, the workflow should fail with a readable diff.
 
-## Local CLI demo
+## ### Workflows
+- `webhook-contract.yml` (basic)
+- `webhook-contract-pr.yml` (PR-safe, detects breaking changes vs base branch)
+
+### Local CLI demo
+
 
 From the *repo root* (this repo), you can demo breaking changes without GitHub Actions:
 
