@@ -145,18 +145,34 @@ async function main() {
         return { pointer: m[1]!, detail: m[2]! };
       };
 
-      const breakingPaths = [
+      const breakingPathsRaw = [
         ...breaking.removedRequired.map((p) => ({ kind: "removedRequired", pointer: p })),
         ...breaking.requiredBecameOptional.map((p) => ({ kind: "requiredBecameOptional", pointer: p })),
         ...breaking.typeChanged.map((p) => ({ kind: "typeChanged", ...splitDetail(p) })),
         ...breaking.constraintsChanged.map((p) => ({ kind: "constraintsChanged", ...splitDetail(p) })),
       ];
 
+      // Determinism for machine consumers: provide stable ordering across kinds.
+      // (The category lists are individually sorted, but concatenation is not.)
+      const byPointerThenKind = (a: any, b: any) => {
+        const ap = String(a.pointer ?? "");
+        const bp = String(b.pointer ?? "");
+        if (ap !== bp) return ap.localeCompare(bp);
+        const ak = String(a.kind ?? "");
+        const bk = String(b.kind ?? "");
+        if (ak !== bk) return ak.localeCompare(bk);
+        const ad = String(a.detail ?? "");
+        const bd = String(b.detail ?? "");
+        return ad.localeCompare(bd);
+      };
+
+      const breakingPaths = breakingPathsRaw.slice().sort(byPointerThenKind);
+
       const nonBreakingPaths = argFlag("--show-nonbreaking")
         ? [
             ...nonBreaking.added.map((p) => ({ kind: "added", pointer: p })),
             ...nonBreaking.removedOptional.map((p) => ({ kind: "removedOptional", pointer: p })),
-          ]
+          ].sort(byPointerThenKind)
         : undefined;
 
       const out = {

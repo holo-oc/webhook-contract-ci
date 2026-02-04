@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
+import fs from "node:fs";
+import os from "node:os";
 import { spawnSync } from "node:child_process";
 
 const repoRoot = process.cwd();
@@ -97,4 +99,41 @@ test("cli: check --json returns ok=false and formatted errors", () => {
   assert.equal(obj.ok, false);
   assert.equal(typeof obj.formattedErrors, "string");
   assert.equal(obj.formattedErrors.length > 0, true);
+});
+
+test("cli: diff --json breakingPaths are deterministically sorted by pointer+kind", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "wcci-test-"));
+
+  const baseFile = path.join(tmpDir, "base.schema.json");
+  const nextFile = path.join(tmpDir, "next.payload.json");
+
+  // Base: closed object with two required fields.
+  const baseSchema = {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      b: { type: "string" },
+      a: { type: "string" },
+    },
+    required: ["a", "b"],
+  };
+
+  // Next payload: missing required 'a' and adds new key 'c' (breaking under closed object).
+  const nextPayload = {
+    b: "ok",
+    c: "new",
+  };
+
+  fs.writeFileSync(baseFile, JSON.stringify(baseSchema, null, 2));
+  fs.writeFileSync(nextFile, JSON.stringify(nextPayload, null, 2));
+
+  const r = run(["diff", "--base", baseFile, "--next", nextFile, "--json"]);
+  assert.equal(r.status, 1);
+
+  const obj = JSON.parse(r.stdout);
+  assert.equal(obj.ok, false);
+  assert.equal(obj.breakingCount > 0, true);
+
+  const pointers = obj.breakingPaths.map((x) => x.pointer);
+  assert.deepEqual(pointers, ["/a", "/c"]);
 });
