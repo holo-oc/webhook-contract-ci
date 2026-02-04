@@ -591,6 +591,148 @@ function resolveLocalRef(root: any, node: any): any {
   return curNode;
 }
 
+function collapseAllOfForIndexing(rootSchema: any, node: any): any {
+  // Best-effort materialization of `allOf` so we can index properties/constraints that are
+  // commonly expressed via composition (OpenAPI, JSON Schema definitions).
+  //
+  // Goal: make `indexSchema()` see the effective shape of objects/arrays well enough for diffing.
+  // We intentionally keep this conservative + deterministic; we do not attempt full JSON Schema
+  // evaluation.
+  if (!node || typeof node !== "object") return node;
+
+  // Resolve refs before collapse so branches can be followed.
+  node = resolveLocalRef(rootSchema, node);
+
+  if (!Array.isArray((node as any).allOf)) return node;
+
+  // Start from the local node, keeping `allOf` for type extraction, but also fold branch
+  // properties/constraints onto the node so indexSchema can see them.
+  const allOf = (node as any).allOf as any[];
+  const out: any = { ...node };
+
+  const mergeNum = (branch: any, key: string, pick: (a: number, b: number) => number) => {
+    const next = branch?.[key];
+    if (typeof next !== "number") return;
+    const cur = out[key];
+    if (typeof cur !== "number") {
+      out[key] = next;
+      return;
+    }
+    out[key] = pick(cur, next);
+  };
+
+  const mergeEqString = (branch: any, key: string) => {
+    const v = branch?.[key];
+    if (typeof v !== "string") return;
+    if (out[key] === undefined) out[key] = v;
+    else if (typeof out[key] === "string" && out[key] !== v) delete out[key];
+  };
+
+  // allOf intersection => stricter constraints.
+  // - minimum: max
+  // - maximum: min
+  // - minLength/minItems/minProperties: max
+  // - maxLength/maxItems/maxProperties: min
+  // - multipleOf: hard to intersect precisely; keep only if identical across branches.
+  // - pattern/format/etc: ambiguous; keep only if identical across branches.
+
+  for (const rawBranch of allOf as any[]) {
+    const branch = collapseAllOfForIndexing(rootSchema, rawBranch);
+    if (!branch || typeof branch !== "object") continue;
+
+    // Required: union.
+    if (Array.isArray(branch.required)) {
+      const cur = new Set<string>(Array.isArray(out.required) ? out.required : []);
+      for (const k of branch.required) cur.add(k);
+      out.required = Array.from(cur).sort((a, b) => a.localeCompare(b));
+    }
+
+    // Properties: merge by name.
+    if (branch.properties && typeof branch.properties === "object") {
+      const curProps = out.properties && typeof out.properties === "object" ? out.properties : {};
+      const merged: any = { ...curProps };
+
+      for (const [k, v] of Object.entries<any>(branch.properties)) {
+        if (merged[k] !== undefined) {
+          // Preserve intersection semantics by composing the per-property schemas.
+          merged[k] = { allOf: [merged[k], v] };
+        } else {
+          merged[k] = v;
+        }
+      }
+
+      out.properties = merged;
+      if (!out.type) out.type = "object";
+    }
+
+    // additionalProperties: stricter wins (false is strictest). If both are schemas, intersect via allOf.
+    if (branch.additionalProperties !== undefined) {
+      const cur = out.additionalProperties;
+      const next = branch.additionalProperties;
+      if (cur === undefined) {
+        out.additionalProperties = next;
+      } else if (cur === false || next === false) {
+        out.additionalProperties = false;
+      } else if (cur && typeof cur === "object" && next && typeof next === "object") {
+        out.additionalProperties = { allOf: [cur, next] };
+      } else {
+        // true + schema => schema is stricter than true.
+        if (cur === true && next && typeof next === "object") out.additionalProperties = next;
+        if (next === true && cur && typeof cur === "object") out.additionalProperties = cur;
+      }
+    }
+
+    // Numeric bounds
+    mergeNum(branch, "minimum", Math.max);
+    mergeNum(branch, "exclusiveMinimum", Math.max);
+    mergeNum(branch, "maximum", Math.min);
+    mergeNum(branch, "exclusiveMaximum", Math.min);
+
+    // Length/count bounds
+    mergeNum(branch, "minLength", Math.max);
+    mergeNum(branch, "maxLength", Math.min);
+    mergeNum(branch, "minItems", Math.max);
+    mergeNum(branch, "maxItems", Math.min);
+    mergeNum(branch, "minProperties", Math.max);
+    mergeNum(branch, "maxProperties", Math.min);
+
+    // multipleOf: keep only if identical.
+    if (typeof branch.multipleOf === "number") {
+      if (out.multipleOf === undefined) out.multipleOf = branch.multipleOf;
+      else if (typeof out.multipleOf === "number" && out.multipleOf !== branch.multipleOf) {
+        delete out.multipleOf;
+      }
+    }
+
+    mergeEqString(branch, "pattern");
+    mergeEqString(branch, "format");
+    mergeEqString(branch, "contentEncoding");
+    mergeEqString(branch, "contentMediaType");
+
+    // propertyNames: keep only if we can preserve it exactly.
+    if (branch.propertyNames && typeof branch.propertyNames === "object") {
+      if (out.propertyNames === undefined) out.propertyNames = branch.propertyNames;
+      else if (stableStringify(out.propertyNames) !== stableStringify(branch.propertyNames)) {
+        delete out.propertyNames;
+      }
+    }
+
+    // items (array) merging: if both specify items, intersect via allOf; else pick the one that exists.
+    if (branch.items !== undefined) {
+      if (out.items === undefined) out.items = branch.items;
+      else {
+        // Tuple vs schema: too complex; only merge schema+schema.
+        if (!Array.isArray(out.items) && !Array.isArray(branch.items)) {
+          out.items = { allOf: [out.items, branch.items] };
+        }
+      }
+      if (!out.type) out.type = "array";
+    }
+  }
+
+  return out;
+}
+
 export function indexSchema(schema: any): Map<string, NodeInfo> {
   const out = new Map<string, NodeInfo>();
 
@@ -600,6 +742,10 @@ export function indexSchema(schema: any): Map<string, NodeInfo> {
     // Resolve local $ref indirections so diff semantics work for common OpenAPI/JSON Schema layouts.
     // Note: we intentionally do not resolve remote refs.
     node = resolveLocalRef(schema, node);
+
+    // allOf composition is common in OpenAPI/JSON Schema; collapse it so we can index
+    // properties/constraints that live in composed branches.
+    node = collapseAllOfForIndexing(schema, node);
 
     const info: NodeInfo = {
       pointer,

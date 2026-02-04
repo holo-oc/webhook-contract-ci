@@ -1252,3 +1252,63 @@ test("diff: resolves local $ref (#/...) when indexing schemas", () => {
   assert.equal(r.breaking.typeChanged.length, 1);
   assert.match(r.breaking.typeChanged[0], /^\/foo\/id/);
 });
+
+test("diff: indexes properties that live in allOf branches", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      event: {
+        allOf: [
+          {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+            },
+            required: ["id"],
+          },
+          {
+            // common OpenAPI pattern: compose constraints separately
+            additionalProperties: false,
+          },
+        ],
+      },
+    },
+    required: ["event"],
+  });
+
+  const nextMissing = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      event: {
+        type: "object",
+        properties: {},
+        required: [],
+      },
+    },
+    required: ["event"],
+  });
+
+  const r1 = summarizeDiff(base, nextMissing);
+  assert.equal(r1.breakingCount > 0, true);
+  assert.deepEqual(r1.breaking.removedRequired, ["/event/id"]);
+
+  const nextAddsUnderClosed = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      event: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          id: { type: "string" },
+          extra: { type: "string" },
+        },
+        required: ["id"],
+      },
+    },
+    required: ["event"],
+  });
+
+  const r2 = summarizeDiff(base, nextAddsUnderClosed);
+  assert.equal(r2.breakingCount > 0, true);
+  assert.equal(r2.breaking.constraintsChanged.some((x) => x.startsWith("/event/extra")), true);
+});
