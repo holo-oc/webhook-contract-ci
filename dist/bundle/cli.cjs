@@ -6573,7 +6573,7 @@ var require_lodash = __commonJS({
   "node_modules/lodash/lodash.js"(exports2, module2) {
     (function() {
       var undefined2;
-      var VERSION = "4.17.23";
+      var VERSION2 = "4.17.23";
       var LARGE_ARRAY_SIZE = 200;
       var CORE_ERROR_TEXT = "Unsupported core-js use. Try https://npms.io/search?q=ponyfill.", FUNC_ERROR_TEXT = "Expected a function", INVALID_TEMPL_VAR_ERROR_TEXT = "Invalid `variable` option passed into `_.template`";
       var HASH_UNDEFINED = "__lodash_hash_undefined__";
@@ -11892,7 +11892,7 @@ var require_lodash = __commonJS({
           });
           return source;
         })(), { "chain": false });
-        lodash.VERSION = VERSION;
+        lodash.VERSION = VERSION2;
         arrayEach(["bind", "bindKey", "curry", "curryRight", "partial", "partialRight"], function(methodName) {
           lodash[methodName].placeholder = lodash;
         });
@@ -24639,6 +24639,9 @@ function isBreakingConstraintChanges(base, next) {
   cmp("minItems", "minItems", "min");
   cmp("maxProperties", "maxProperties", "max");
   cmp("minProperties", "minProperties", "min");
+  if (base.uniqueItems === true && next.uniqueItems !== true) {
+    reasons.push("uniqueItems loosened");
+  }
   return reasons;
 }
 function escapePointerToken(token) {
@@ -24801,6 +24804,7 @@ function indexSchema(schema) {
       contentMediaType: typeof node.contentMediaType === "string" ? node.contentMediaType : void 0,
       minItems: typeof node.minItems === "number" ? node.minItems : void 0,
       maxItems: typeof node.maxItems === "number" ? node.maxItems : void 0,
+      uniqueItems: typeof node.uniqueItems === "boolean" ? node.uniqueItems : void 0,
       minProperties: typeof node.minProperties === "number" ? node.minProperties : void 0,
       maxProperties: typeof node.maxProperties === "number" ? node.maxProperties : void 0
     };
@@ -24976,10 +24980,12 @@ function validateAgainstSchema(schema, payload) {
 }
 
 // src/cli.ts
+var import_meta = {};
+var VERSION = JSON.parse(import_node_fs.default.readFileSync(new URL("../package.json", import_meta.url), "utf8")).version;
 function usage(code = 2) {
   const out = code === 0 ? console.log : console.error;
   out(
-    `wcci - webhook contract CI
+    `wcci - webhook contract CI (v${VERSION})
 
 Usage:
   wcci infer --in <payload.json> --out <schema.json>
@@ -24988,6 +24994,7 @@ Usage:
 
 Options:
   -h, --help              Show help
+  --version               Show version
   --show-nonbreaking      Also print non-breaking adds/removals (diff mode)
   --json                  Print machine-readable JSON output
   --debug-schema-diff     Print json-schema-diff output (diff mode)
@@ -25032,6 +25039,10 @@ function writeJson(file, value) {
 }
 async function main() {
   if (import_node_process.default.argv.includes("-h") || import_node_process.default.argv.includes("--help")) usage(0);
+  if (import_node_process.default.argv.includes("--version")) {
+    console.log(`wcci v${VERSION}`);
+    import_node_process.default.exit(0);
+  }
   const cmd = import_node_process.default.argv[2];
   if (!cmd || cmd !== "infer" && cmd !== "check" && cmd !== "diff") usage(2);
   if (cmd === "infer") {

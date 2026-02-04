@@ -21,6 +21,7 @@ export type NodeInfo = {
     contentMediaType?: string;
     minItems?: number;
     maxItems?: number;
+    uniqueItems?: boolean;
     minProperties?: number;
     maxProperties?: number;
 };

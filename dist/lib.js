@@ -445,6 +445,11 @@ function isBreakingConstraintChanges(base, next) {
     cmp("minItems", "minItems", "min");
     cmp("maxProperties", "maxProperties", "max");
     cmp("minProperties", "minProperties", "min");
+    // uniqueItems
+    if (base.uniqueItems === true && next.uniqueItems !== true) {
+        // base required unique items, next does not (or missing) -> widening
+        reasons.push("uniqueItems loosened");
+    }
     return reasons;
 }
 function escapePointerToken(token) {
@@ -681,6 +686,7 @@ export function indexSchema(schema) {
             contentMediaType: typeof node.contentMediaType === "string" ? node.contentMediaType : undefined,
             minItems: typeof node.minItems === "number" ? node.minItems : undefined,
             maxItems: typeof node.maxItems === "number" ? node.maxItems : undefined,
+            uniqueItems: typeof node.uniqueItems === "boolean" ? node.uniqueItems : undefined,
             minProperties: typeof node.minProperties === "number" ? node.minProperties : undefined,
             maxProperties: typeof node.maxProperties === "number" ? node.maxProperties : undefined,
         };

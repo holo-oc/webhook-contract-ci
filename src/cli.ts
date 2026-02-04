@@ -13,6 +13,8 @@ import {
   validateAgainstSchema,
 } from "./lib.js";
 
+const VERSION = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf8")).version;
+
 type Cmd = "infer" | "check" | "diff";
 
 type ExitCode = 0 | 1 | 2;
@@ -20,7 +22,7 @@ type ExitCode = 0 | 1 | 2;
 function usage(code: ExitCode = 2): never {
   const out = code === 0 ? console.log : console.error;
   out(
-    `wcci - webhook contract CI\n\nUsage:\n  wcci infer --in <payload.json> --out <schema.json>\n  wcci check --schema <schema.json> --in <payload.json> [--json]\n  wcci diff --base <schema.json> (--next <payload.json> | --next-schema <schema.json>) [--show-nonbreaking] [--json]\n\nOptions:\n  -h, --help              Show help\n  --show-nonbreaking      Also print non-breaking adds/removals (diff mode)\n  --json                  Print machine-readable JSON output\n  --debug-schema-diff     Print json-schema-diff output (diff mode)\n\nExit codes:\n  0  success / no breaking changes\n  1  breaking changes (diff) or validation failure (check)\n  2  usage / input error\n`
+    `wcci - webhook contract CI (v${VERSION})\n\nUsage:\n  wcci infer --in <payload.json> --out <schema.json>\n  wcci check --schema <schema.json> --in <payload.json> [--json]\n  wcci diff --base <schema.json> (--next <payload.json> | --next-schema <schema.json>) [--show-nonbreaking] [--json]\n\nOptions:\n  -h, --help              Show help\n  --version               Show version\n  --show-nonbreaking      Also print non-breaking adds/removals (diff mode)\n  --json                  Print machine-readable JSON output\n  --debug-schema-diff     Print json-schema-diff output (diff mode)\n\nExit codes:\n  0  success / no breaking changes\n  1  breaking changes (diff) or validation failure (check)\n  2  usage / input error\n`
   );
   process.exit(code);
 }
@@ -61,6 +63,10 @@ function writeJson(file: string, value: unknown) {
 
 async function main() {
   if (process.argv.includes("-h") || process.argv.includes("--help")) usage(0);
+  if (process.argv.includes("--version")) {
+    console.log(`wcci v${VERSION}`);
+    process.exit(0);
+  }
 
   const cmd = process.argv[2] as Cmd | undefined;
   if (!cmd || (cmd !== "infer" && cmd !== "check" && cmd !== "diff")) usage(2);

@@ -1476,3 +1476,62 @@ test("diff: tuple array items are displayed as /[0], /[1] in pointers", () => {
   assert.equal(r.breaking.typeChanged.length, 1);
   assert.match(r.breaking.typeChanged[0], /^\/arr\/\[0\]\/id/);
 });
+
+test("diff: uniqueItems constraint", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      arr: { type: "array", items: { type: "string" }, uniqueItems: true },
+    },
+    required: ["arr"],
+  });
+
+  const nextMissing = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      arr: { type: "array", items: { type: "string" } },
+    },
+    required: ["arr"],
+  });
+
+  const r1 = summarizeDiff(base, nextMissing);
+  assert.equal(r1.breakingCount > 0, true);
+  assert.equal(r1.breaking.constraintsChanged.length, 1);
+  assert.match(r1.breaking.constraintsChanged[0], /^\/arr \(uniqueItems loosened\)$/);
+
+  const nextFalse = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      arr: { type: "array", items: { type: "string" }, uniqueItems: false },
+    },
+    required: ["arr"],
+  });
+
+  const r2 = summarizeDiff(base, nextFalse);
+  assert.equal(r2.breakingCount > 0, true);
+  assert.equal(r2.breaking.constraintsChanged.length, 1);
+  assert.match(r2.breaking.constraintsChanged[0], /^\/arr \(uniqueItems loosened\)$/);
+
+  const nextTrue = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      arr: { type: "array", items: { type: "string" }, uniqueItems: true },
+    },
+    required: ["arr"],
+  });
+
+  const r3 = summarizeDiff(base, nextTrue);
+  assert.equal(r3.breakingCount, 0);
+
+  // tightening (base missing uniqueItems, next adds uniqueItems: true) is non-breaking
+  const baseNoUnique = normalizeToJsonSchema({
+    type: "object",
+    properties: {
+      arr: { type: "array", items: { type: "string" } },
+    },
+    required: ["arr"],
+  });
+
+  const r4 = summarizeDiff(baseNoUnique, nextTrue);
+  assert.equal(r4.breakingCount, 0);
+});

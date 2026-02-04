@@ -54,6 +54,7 @@ export type NodeInfo = {
   // Array constraints
   minItems?: number;
   maxItems?: number;
+  uniqueItems?: boolean;
 
   // Object constraints
   minProperties?: number;
@@ -530,6 +531,12 @@ function isBreakingConstraintChanges(base: NodeInfo, next: NodeInfo): string[] {
   cmp("maxProperties", "maxProperties", "max");
   cmp("minProperties", "minProperties", "min");
 
+  // uniqueItems
+  if (base.uniqueItems === true && next.uniqueItems !== true) {
+    // base required unique items, next does not (or missing) -> widening
+    reasons.push("uniqueItems loosened");
+  }
+
   return reasons;
 }
 
@@ -785,6 +792,7 @@ export function indexSchema(schema: any): Map<string, NodeInfo> {
 
       minItems: typeof node.minItems === "number" ? node.minItems : undefined,
       maxItems: typeof node.maxItems === "number" ? node.maxItems : undefined,
+      uniqueItems: typeof node.uniqueItems === "boolean" ? node.uniqueItems : undefined,
 
       minProperties: typeof node.minProperties === "number" ? node.minProperties : undefined,
       maxProperties: typeof node.maxProperties === "number" ? node.maxProperties : undefined,
