@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "opt": { "type": "string" },
+    "nested": {
+      "type": "object",
+      "properties": {
+        "a": { "type": "number" }
+      },
+      "required": ["a"]
+    }
+  },
+  "required": ["id", "nested"]
+}

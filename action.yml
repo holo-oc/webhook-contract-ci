@@ -30,18 +30,31 @@ runs:
     - name: Run wcci
       shell: bash
       run: |
-        cd "${{ github.action_path }}"
         MODE="${{ inputs.mode }}"
-        SCHEMA="${{ inputs.schema }}"
-        PAYLOAD="${{ inputs.payload }}"
+
+        # Inputs are expected to be relative to the repo root (GITHUB_WORKSPACE).
+        # If an absolute path is provided, keep it as-is.
+        if [[ "${{ inputs.schema }}" = /* ]]; then
+          SCHEMA="${{ inputs.schema }}"
+        else
+          SCHEMA="$GITHUB_WORKSPACE/${{ inputs.schema }}"
+        fi
+
+        if [[ "${{ inputs.payload }}" = /* ]]; then
+          PAYLOAD="${{ inputs.payload }}"
+        else
+          PAYLOAD="$GITHUB_WORKSPACE/${{ inputs.payload }}"
+        fi
 
         EXTRA=""
         if [ "${{ inputs.show_nonbreaking }}" = "true" ]; then
           EXTRA="--show-nonbreaking"
         fi
 
+        CLI="$GITHUB_ACTION_PATH/dist/cli.js"
+
         if [ "$MODE" = "check" ]; then
-          node dist/cli.js check --schema "$SCHEMA" --in "$PAYLOAD"
+          node "$CLI" check --schema "$SCHEMA" --in "$PAYLOAD"
         else
-          node dist/cli.js diff --base "$SCHEMA" --next "$PAYLOAD" $EXTRA
+          node "$CLI" diff --base "$SCHEMA" --next "$PAYLOAD" $EXTRA
         fi

@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "properties": {
+    "id": { "type": "number" },
+    "nested": {
+      "type": "object",
+      "properties": {
+        "a": { "type": "number" }
+      },
+      "required": ["a"]
+    }
+  },
+  "required": ["id", "nested"]
+}

@@ -1,0 +1,20 @@
+# Example: enforce webhook payload contracts in CI
+name: Webhook contract
+
+on:
+  pull_request:
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # In your own repo, use a tagged release, e.g.:
+      # - uses: your-org/webhook-contract-ci@v1
+      - uses: owner/webhook-contract-ci@v1
+        with:
+          mode: diff
+          schema: schemas/webhook.schema.json
+          payload: samples/webhook.payload.json
+          show_nonbreaking: true

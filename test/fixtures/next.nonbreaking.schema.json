@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "nested": {
+      "type": "object",
+      "properties": {
+        "a": { "type": "number" },
+        "newField": { "type": "string" }
+      },
+      "required": ["a", "newField"]
+    },
+    "addedTop": { "type": "boolean" }
+  },
+  "required": ["id", "nested", "addedTop"]
+}
