@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "properties": {
+    "AccountSid": {
+      "type": "string"
+    },
+    "Body": {
+      "type": "string"
+    },
+    "From": {
+      "type": "string",
+      "format": "utc-millisec"
+    },
+    "MessageSid": {
+      "type": "string"
+    },
+    "NumMedia": {
+      "type": "string",
+      "format": "utc-millisec"
+    },
+    "NumSegments": {
+      "type": "string",
+      "format": "utc-millisec"
+    },
+    "To": {
+      "type": "string",
+      "format": "utc-millisec"
+    }
+  },
+  "required": [
+    "AccountSid",
+    "Body",
+    "From",
+    "MessageSid",
+    "NumMedia",
+    "NumSegments",
+    "To"
+  ]
+}

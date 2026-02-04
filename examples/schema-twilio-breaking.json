@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "properties": {
+    "AccountSid": {
+      "type": "string"
+    },
+    "MediaCount": {
+      "type": "integer"
+    },
+    "MessageSid": {
+      "type": "string"
+    },
+    "Recipient": {
+      "type": "string",
+      "format": "utc-millisec"
+    },
+    "Sender": {
+      "type": "string",
+      "format": "utc-millisec"
+    },
+    "Text": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "AccountSid",
+    "MediaCount",
+    "MessageSid",
+    "Recipient",
+    "Sender",
+    "Text"
+  ]
+}

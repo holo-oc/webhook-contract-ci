@@ -1,0 +1,13 @@
+
+> webhook-contract-ci@1.0.0 demo:twilio:breaking
+> npm run build && node dist/cli.js diff --base examples/schema-twilio.json --next examples/payload-twilio-breaking.json --show-nonbreaking
+
+
+> webhook-contract-ci@1.0.0 build
+> tsc -p tsconfig.json
+
+added paths:
+- /MediaCount
+- /Recipient
+- /Sender
+- /Text

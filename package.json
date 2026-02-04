@@ -37,7 +37,9 @@
     "demo:github": "npm run build && node dist/cli.js diff --base examples/schema-github.json --next examples/payload-github.json",
     "demo:github:breaking": "npm run build && node dist/cli.js diff --base examples/schema-github.json --next examples/payload-github-breaking.json --show-nonbreaking",
     "demo:shopify": "npm run build && node dist/cli.js diff --base examples/schema-shopify.json --next examples/payload-shopify.json",
-    "demo:shopify:breaking": "npm run build && node dist/cli.js diff --base examples/schema-shopify.json --next examples/payload-shopify-breaking.json --show-nonbreaking"
+    "demo:shopify:breaking": "npm run build && node dist/cli.js diff --base examples/schema-shopify.json --next examples/payload-shopify-breaking.json --show-nonbreaking",
+  "demo:twilio": "npm run build && node dist/cli.js diff --base examples/schema-twilio.json --next examples/payload-twilio.json",
+  "demo:twilio:breaking": "npm run build && node dist/cli.js diff --base examples/schema-twilio.json --next examples/payload-twilio-breaking.json --show-nonbreaking"
   },
   "keywords": [],
   "author": "",
