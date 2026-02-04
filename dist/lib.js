@@ -186,7 +186,9 @@ function isBreakingConstraintChanges(base, next) {
     // IMPORTANT: when `next` is *inferred* from a payload sample, the inference process typically
     // omits `additionalProperties` entirely. Treating `undefined` as "opened" would create noisy
     // false positives for any base schema that uses `additionalProperties:false`.
-    if (base.additionalProperties === false && next.additionalProperties === true) {
+    if (base.additionalProperties === false &&
+        (next.additionalProperties === true ||
+            (next.additionalProperties !== null && typeof next.additionalProperties === "object"))) {
         reasons.push(`additionalProperties opened`);
     }
     // If base had a schema for additionalProperties (meaning "extra" keys are allowed but must

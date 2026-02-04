@@ -219,6 +219,83 @@ test("diff: const object values compare deterministically (key order doesn't mat
   assert.equal(r.breakingCount, 0);
 });
 
+test("diff: adding a property under a closed object (additionalProperties:false) is breaking", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      id: { type: "string" },
+    },
+    required: ["id"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      id: { type: "string" },
+      newField: { type: "string" },
+    },
+    required: ["id", "newField"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.equal(r.breaking.constraintsChanged.some((x) => x.startsWith("/newField")), true);
+});
+
+test("diff: base additionalProperties:false -> next allows extras (schema) is breaking", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      id: { type: "string" },
+    },
+    required: ["id"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: { type: "string" },
+    properties: {
+      id: { type: "string" },
+    },
+    required: ["id"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.equal(r.breaking.constraintsChanged.some((x) => x.includes("additionalProperties opened")), true);
+});
+
+test("diff: adding a key that violates additionalProperties subschema is breaking", () => {
+  const base = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: { type: "string" },
+    properties: {
+      id: { type: "string" },
+    },
+    required: ["id"],
+  });
+
+  const next = normalizeToJsonSchema({
+    type: "object",
+    additionalProperties: { type: "string" },
+    properties: {
+      id: { type: "string" },
+      count: { type: "number" },
+    },
+    required: ["id", "count"],
+  });
+
+  const r = summarizeDiff(base, next);
+  assert.equal(r.breakingCount > 0, true);
+  assert.equal(
+    r.breaking.constraintsChanged.some((x) => x.includes("violates additionalProperties schema")),
+    true
+  );
+});
+
 test("diff: loosening numeric/string bounds is breaking", () => {
   const base = normalizeToJsonSchema({
     type: "object",
