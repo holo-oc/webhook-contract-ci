@@ -191,3 +191,4 @@ npm test
 
 ## License
 TBD
+# Improvements to diff semantics
